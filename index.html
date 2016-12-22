@@ -1,1 +1,146 @@
-Hello World
+<h1>C++ Concurrent Unordered Map</h1>
+<address>Committee: ISO/IEC JTC1 SC22 WG21 SG1 Concurrency</address><address>Document number:</address><address>Project: Programming Language C++</address><address>&nbsp;</address><address>Sergey Murylev&nbsp;&lt;<span style="color: #0000ff;">s</span><span style="text-decoration: underline; color: #0000ff;">ergey.murylev<a style="color: #0000ff; text-decoration: underline;" href="mailto:cerevra@yandex.ru">@g</a>mail.com</span>&gt;, &lt;<span style="text-decoration: underline; color: #0000ff;">smurylev<a style="color: #0000ff; text-decoration: underline;" href="mailto:cerevra@yandex-team.ru">@yandex-team.ru</a></span>&gt;</address><address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address><address>&nbsp;</address><address>Date: 2016-12-22</address><address>&nbsp;</address><address>
+<h2><a name="Introduction"></a>Introduction And Motivation</h2>
+<p>Unordered map provides associative container interface that contains key-value pairs and operations: search, insertion and removing of elements by key with average constant time complexity.</p>
+<p>The existing unordered_map type in the standatd library is implemented as hash table with separate chaining collision resolution. Its reference-returning element access operations cannot synchronize access to those elements with other operations. In this way concurrent access to it requires syncronization.</p>
+<h2><a name="Conceptual"></a>Conceptual Interface</h2>
+<p>We provide the same operations as regular unordedred_map type, and&nbsp;syncronize them &nbsp;to make the collection thread-safe.</p>
+<h3><a name="basic_operations"></a>Basic Operations</h3>
+<p>The essential solution to the problem of concurrent&nbsp;mapping is to wrap references to internal contents into a special&nbsp;type that is not assignable to value type.</p>
+<p>The basic operations are:</p>
+<dl>
+<dt><code>reference_guard&lt;Value&gt; concurrent_unordered_map::operator[](const Key&amp; key);</code></dt>
+<dt><code>reference_guard&lt;const Value&gt;concurrent_unordered_map::operator[](const Key&amp; key) const;</code></dt>
+</dl>
+<p>In this case we guarantee that parallel modifications of collection wouldn't break it, but we don't care about consitency of &nbsp;stored value type, i.e. value type should be immutable or syncronized to prevent race conditions whith concurrent modification of the same value.</p>
+<h2><a name="Implementation"></a>Implementation</h2>
+<p>A free opensource implementation is available at&nbsp;<a href="https://github.com/BlazingPhoenix/concurrent-hash-map/blob/master/concurrent_hash_map.hpp">https://github.com/BlazingPhoenix/concurrent-hash-map/blob/master/concurrent_hash_map.hpp</a></p>
+<h3>Template class concurrent_unordered_map&nbsp;overview</h3>
+<!-- HTML generated using hilite.me -->
+<div style="background: #ffffff; overflow: auto; width: auto; border: solid gray; border-width: .1em .1em .1em .8em; padding: .2em .6em;">
+<pre style="margin: 0; line-height: 125%;"><span style="color: #000080; font-weight: bold;">template</span>&lt;
+    <span style="color: #000080; font-weight: bold;">class</span> Key,
+    <span style="color: #000080; font-weight: bold;">class</span> Value,
+    <span style="color: #000080; font-weight: bold;">class</span> Hash = std::hash&lt;Key&gt;,
+    <span style="color: #000080; font-weight: bold;">class</span> KeyEqual = std::equal_to&lt;Key&gt;,
+    <span style="color: #000080; font-weight: bold;">class</span> Allocator = std::allocator&lt;std::pair&lt;<span style="color: #000080; font-weight: bold;">const</span> Key, Value&gt;&gt;,
+    <span style="color: #000080; font-weight: bold;">class</span> Locable = std::mutex
+    &gt;
+<span style="color: #000080; font-weight: bold;">class</span> concurrent_unordered_map {
+public:
+    <span style="color: #000080; font-weight: bold;">using</span> bucket_type = std::unordered_map&lt;Key, Value, Hash, KeyEqual, Allocator&gt;;
+    <span style="color: #000080; font-weight: bold;">using</span> allocator_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::allocator_type;
+    <span style="color: #000080; font-weight: bold;">using</span> key_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::key_type;
+    <span style="color: #000080; font-weight: bold;">using</span> mapped_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::mapped_type;
+    <span style="color: #000080; font-weight: bold;">using</span> value_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::value_type;
+    <span style="color: #000080; font-weight: bold;">using</span> size_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::size_type;
+    <span style="color: #000080; font-weight: bold;">using</span> difference_type = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::difference_type;
+    <span style="color: #000080; font-weight: bold;">using</span> hasher = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::hasher;
+    <span style="color: #000080; font-weight: bold;">using</span> key_equal = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::key_equal;
+    <span style="color: #000080; font-weight: bold;">using</span> reference = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::reference;
+    <span style="color: #000080; font-weight: bold;">using</span> const_reference = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::const_reference;
+    <span style="color: #000080; font-weight: bold;">using</span> pointer = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::pointer;
+    <span style="color: #000080; font-weight: bold;">using</span> const_pointer = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::const_pointer;
+    <span style="color: #000080; font-weight: bold;">using</span> local_iterator = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::iterator;
+    <span style="color: #000080; font-weight: bold;">using</span> const_local_iterator = <span style="color: #000080; font-weight: bold;">typename</span> bucket_type::const_iterator;
+
+    <span style="color: #000080; font-weight: bold;">explicit</span> concurrent_unordered_map(size_type bucket_count = DEFAULT_BUCKET_COUNT,
+                                      <span style="color: #000080; font-weight: bold;">const</span> Hash&amp; hash = Hash(),
+                                      <span style="color: #000080; font-weight: bold;">const</span> KeyEqual&amp; equal = KeyEqual(),
+                                      <span style="color: #000080; font-weight: bold;">const</span> allocator_type&amp; allocator = allocator_type());
+    <span style="color: #000080; font-weight: bold;">explicit</span> concurrent_unordered_map(<span style="color: #000080; font-weight: bold;">const</span> allocator_type&amp; allocator);
+    <span style="color: #000080; font-weight: bold;">template</span>&lt;<span style="color: #000080; font-weight: bold;">class</span> InputIt&gt;
+    concurrent_unordered_map(InputIt first, InputIt last,
+                             size_type bucket_count = DEFAULT_BUCKET_COUNT,
+                             <span style="color: #000080; font-weight: bold;">const</span> Hash&amp; hash = Hash(),
+                             <span style="color: #000080; font-weight: bold;">const</span> KeyEqual&amp; equal = KeyEqual(),
+                             <span style="color: #000080; font-weight: bold;">const</span> allocator_type&amp; allocator = allocator_type());
+    concurrent_unordered_map(std::initializer_list&lt;value_type&gt; init,
+                             size_type bucket_count = DEFAULT_BUCKET_COUNT,
+                             <span style="color: #000080; font-weight: bold;">const</span> Hash&amp; hash = Hash(),
+                             <span style="color: #000080; font-weight: bold;">const</span> KeyEqual&amp; equal = KeyEqual(),
+                             <span style="color: #000080; font-weight: bold;">const</span> allocator_type&amp; allocator = allocator_type());
+    concurrent_unordered_map(<span style="color: #000080; font-weight: bold;">const</span> concurrent_unordered_map&amp;) = <span style="color: #000080; font-weight: bold;">delete</span>;
+    concurrent_unordered_map(concurrent_unordered_map&amp;&amp; other);
+
+    allocator_type get_allocator() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    concurrent_unordered_map&amp; <span style="color: #000080; font-weight: bold;">operator</span>=(<span style="color: #000080; font-weight: bold;">const</span> concurrent_unordered_map&amp;) = <span style="color: #000080; font-weight: bold;">delete</span>;
+    concurrent_unordered_map&amp; <span style="color: #000080; font-weight: bold;">operator</span>=(std::initializer_list&lt;value_type&gt;) = <span style="color: #000080; font-weight: bold;">delete</span>;
+    concurrent_unordered_map&amp; <span style="color: #000080; font-weight: bold;">operator</span>=(concurrent_unordered_map&amp;&amp; other);
+
+    <span style="color: #000080; font-weight: bold;">bool</span> empty() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    size_type size() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    <span style="color: #000080; font-weight: bold;">void</span> clear();
+
+    size_type max_size() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    reference_guard&lt;<span style="color: #000080; font-weight: bold;">const</span> Value&gt; <span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+    reference_guard&lt;Value&gt; <span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
+
+    reference_guard&lt;Value&gt; at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
+    reference_guard&lt;<span style="color: #000080; font-weight: bold;">const</span> Value&gt; at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+
+    size_type count(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+    <span style="color: #000080; font-weight: bold;">void</span> swap(concurrent_unordered_map&lt;Key, Value, Hash, KeyEqual, Allocator&gt;&amp; other);
+
+    iterator find(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
+
+    const_iterator find(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+
+    std::pair&lt;iterator,iterator&gt; equal_range(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
+    std::pair&lt;const_iterator,const_iterator&gt; equal_range(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+
+    std::pair&lt;iterator, <span style="color: #000080; font-weight: bold;">bool</span>&gt; insert(<span style="color: #000080; font-weight: bold;">const</span> value_type&amp; val);
+    <span style="color: #000080; font-weight: bold;">template</span>&lt;<span style="color: #000080; font-weight: bold;">class</span> P&gt;
+    std::pair&lt;iterator, <span style="color: #000080; font-weight: bold;">bool</span>&gt; insert(P&amp;&amp; val);
+    <span style="color: #000080; font-weight: bold;">template</span>&lt;<span style="color: #000080; font-weight: bold;">class</span> InputIterator&gt;
+    <span style="color: #000080; font-weight: bold;">void</span> insert(InputIterator first, InputIterator last);
+    <span style="color: #000080; font-weight: bold;">void</span> insert(std::initializer_list&lt;value_type&gt; items);
+
+    <span style="color: #000080; font-weight: bold;">template</span> &lt;<span style="color: #000080; font-weight: bold;">class</span> M&gt;
+    std::pair&lt;iterator, <span style="color: #000080; font-weight: bold;">bool</span>&gt; insert_or_assign(<span style="color: #000080; font-weight: bold;">const</span> key_type&amp; key, M&amp;&amp; obj);
+
+    <span style="color: #000080; font-weight: bold;">template</span>&lt;<span style="color: #000080; font-weight: bold;">class</span> K, class... Args&gt;
+    <span style="color: #000080; font-weight: bold;">bool</span> emplace(K key, Args&amp;&amp;... args);
+
+    iterator erase(const_iterator pos);
+
+    iterator erase(const_iterator first, const_iterator last);
+
+    size_type erase(<span style="color: #000080; font-weight: bold;">const</span> key_type&amp; key);
+
+    iterator begin();
+    iterator end();
+    const_iterator cbegin() <span style="color: #000080; font-weight: bold;">const</span>;
+    const_iterator cend() <span style="color: #000080; font-weight: bold;">const</span>;
+    const_iterator begin() <span style="color: #000080; font-weight: bold;">const</span>;
+    const_iterator end() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    size_type bucket_count() <span style="color: #000080; font-weight: bold;">const</span>;
+    size_type max_bucket_count() <span style="color: #000080; font-weight: bold;">const</span>;
+
+    size_type bucket_size(<span style="color: #000080; font-weight: bold;">const</span> size_type bucket_id) <span style="color: #000080; font-weight: bold;">const</span>;
+
+    size_type bucket(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+
+    <span style="color: #000080; font-weight: bold;">float</span> load_factor() <span style="color: #000080; font-weight: bold;">const</span>;
+    <span style="color: #000080; font-weight: bold;">float</span> max_load_factor() <span style="color: #000080; font-weight: bold;">const</span>;
+    <span style="color: #000080; font-weight: bold;">void</span> max_load_factor(<span style="color: #000080; font-weight: bold;">float</span> ml);
+
+    <span style="color: #000080; font-weight: bold;">void</span> rehash(size_type count);
+    <span style="color: #000080; font-weight: bold;">void</span> reserve(size_type count);
+
+    hasher hash_function() <span style="color: #000080; font-weight: bold;">const</span>;
+    key_equal key_eq() <span style="color: #000080; font-weight: bold;">const</span>;
+};
+</pre>
+</div>
+<p>&nbsp;</p>
+<h2><a name="Revision"></a>Revision History</h2>
+<ul>
+<li>&nbsp;Add an 'Implementation' section.</li>
+</ul>
+</address>
