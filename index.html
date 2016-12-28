@@ -6,12 +6,14 @@
 <h2><a name="Conceptual"></a>Conceptual Interface</h2>
 <p>We provide the same operations as regular unordedred_map type, and&nbsp;syncronize them &nbsp;to make the collection thread-safe.</p>
 <h3><a name="basic_operations"></a>Basic Operations</h3>
-<p>The essential solution to the problem of concurrent&nbsp;mapping is to wrap references to internal contents into a special&nbsp;type that is not assignable to value type.</p>
+<p>The essential solution to the problem of concurrent&nbsp;mapping is to remove operations that allows to get an internal contents reference and disallow assignment to internal contents using iterator. </p>
 <p>The basic operations are:</p>
-<dl>
-<dt><code>reference_guard&lt;Value&gt; concurrent_unordered_map::operator[](const Key&amp; key);</code></dt>
-<dt><code>reference_guard&lt;const Value&gt;concurrent_unordered_map::operator[](const Key&amp; key) const;</code></dt>
-</dl>
+</address><address>
+<pre style="margin: 0; line-height: 125%;"><span style="color: #000080; font-weight: bold;">const</span> Value&amp; <code>concurrent_unordered_map::</code>at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;</pre>
+<pre style="margin: 0; line-height: 125%;"><span style="color: #000080; font-weight: bold;">const</span> Value&amp; <code>concurrent_unordered_map:</code><span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;</pre>
+</address><address>
+<pre style="margin: 0; line-height: 125%;">std::pair&lt;iterator, <span style="color: #000080; font-weight: bold;">bool</span>&gt; <code>concurrent_unordered_map::</code>insert(<span style="color: #000080; font-weight: bold;">const</span> value_type&amp; val);</pre>
+<pre style="margin: 0; line-height: 125%;">iterator <code>concurrent_unordered_map::</code>erase(const_iterator pos);</pre>
 <p>In this case we guarantee that parallel modifications of collection wouldn't break it, but we don't care about consitency of &nbsp;stored value type, i.e. value type should be immutable or syncronized to prevent race conditions whith concurrent modification of the same value.</p>
 <h2><a name="Implementation"></a>Implementation</h2>
 <p>A free opensource implementation is available at&nbsp;<a href="https://github.com/01org/tbb/blob/tbb_2017/include/tbb/concurrent_unordered_map.h">https://github.com/01org/tbb/blob/tbb_2017/include/tbb/concurrent_unordered_map.h</a></p>
@@ -77,11 +79,9 @@ public:
 
     size_type max_size() <span style="color: #000080; font-weight: bold;">const</span>;
 
-    reference_guard&lt;<span style="color: #000080; font-weight: bold;">const</span> Value&gt; <span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
-    reference_guard&lt;Value&gt; <span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
+    <span style="color: #000080; font-weight: bold;">const</span> Value&amp; <span style="color: #000080; font-weight: bold;">operator</span>[](<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
 
-    reference_guard&lt;Value&gt; at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key);
-    reference_guard&lt;<span style="color: #000080; font-weight: bold;">const</span> Value&gt; at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
+    <span style="color: #000080; font-weight: bold;">const</span> Value&amp; at(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
 
     size_type count(<span style="color: #000080; font-weight: bold;">const</span> Key&amp; key) <span style="color: #000080; font-weight: bold;">const</span>;
     <span style="color: #000080; font-weight: bold;">void</span> swap(concurrent_unordered_map&lt;Key, Value, Hash, KeyEqual, Allocator&gt;&amp; other);
@@ -141,6 +141,8 @@ public:
 <p>&nbsp;</p>
 <h2><a name="Revision"></a>Revision History</h2>
 <ul>
-<li>&nbsp;Add an 'Implementation' section.</li>
+<li>Changed basic operations description &amp; interface</li>
+<li>Changed implementation url </li>
+<li>Add an 'Implementation' section.</li>
 </ul>
 </address>
