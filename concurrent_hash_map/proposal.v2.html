@@ -215,7 +215,7 @@
   <span class="cppkeyword">class </span>concurrent_unordered_map {
   <span class="cppkeyword">public</span>:
     <span class="cppcomment">// types:
-    </span><span style="background-color: green"><span class="cppkeyword">class </span>unsynchronized_view;</span>
+    </span><span style="background-color: green"><span class="cppkeyword">class </span>unordered_map_view;</span>
     <span class="cppkeyword">using</span> key_type          = Key;
     <span class="cppkeyword">using</span> mapped_type       = T;
     <span class="cppkeyword">using</span> value_type        = pair&lt;<span class="cppkeyword">const </span>Key, T&gt;;
@@ -266,18 +266,25 @@
     key_equal key_eq() <span class="cppkeyword">const</span>;</span>
 
     <span class="cppcomment">// concurrent-safe element retrieval:
-</span>    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) const;
-    mapped_type find(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>mapped_type&amp; default_value) const;
+</span><span style="background-color: red">    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) const;
+    mapped_type find(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>mapped_type&amp; default_value) const;</span>
+    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
+    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
+    mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;</span>
+
 
     <span class="cppcomment">// executes `f` under a `lock` if `key` is in *this.
-</span>    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);
+</span>    <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);</span>
+    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);</span>
 
     <span style="background-color: green"><span class="cppcomment">// executes `f` under a `lock` for all `key` is in *this, but we don't make global table lock on the operation, in this case you can observe some non repeatable read issues</span>
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit_all(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit_all(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f) <span
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f);
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span
                 class="cppkeyword">const</span>;</span>
 
     <span class="cppcomment">// executes `f` under a `lock`. If `key` is not in *this calls emplace(std::forward&lt;Args&gt;(args)...) first.
@@ -299,10 +306,11 @@
             class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> emplace(key_type&amp;&amp; key, Args&amp;&amp;... val);</span>
 
+    <span style="background-color: red">
     <span class="cppkeyword">bool</span> insert(<span class="cppkeyword">const </span>value_type&amp; x);
     <span class="cppkeyword">bool</span> insert(value_type&amp;&amp; x);
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>InputIterator&gt;
-    <span class="cppkeyword">void</span> insert(InputIterator first, InputIterator last);
+    <span class="cppkeyword">void</span> insert(InputIterator first, InputIterator last);</span>
 
     <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span
             class="cppkeyword">typename</span> V&gt;
@@ -315,7 +323,7 @@
 
     <span style="background-color: red">optional&lt;value_type&gt; extract(<span class="cppkeyword">const </span>key_type&amp; x);</span>
 
-    size_type update(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>value_type&amp; val);
+    <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>value_type&amp; val);</span>
     <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, value_type&amp;&amp; val);</span>
     <span style="background-color:
     green"><span style="background-color:
@@ -323,7 +331,12 @@
             class="cppkeyword">typename</span>... Args&gt;
     size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span></span>
 
-    size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);
+    <span style="background-color: red">size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);</span>
+    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
+    size_type erase(<span class="cppkeyword">const </span>K&&amp; key);</span>
+    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
+            class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
+    <span class="cppkeyword">void</span> erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
 
     <span style="background-color: green"><span class="cppcomment">// whole container state modifiers:</span></span>
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
