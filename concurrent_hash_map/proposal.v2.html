@@ -147,7 +147,8 @@
     (so are also useless).
     Instead of that, we came up with an idea of <b>unsynchronized view/policy</b>.</p>
 
-<h3>D. Unsynchronized view/policy with a full interface:</h3>
+<h3>D. <span style="background-color: red">Unsynchronized view</span>
+    <span style="background-color: green">View</span>/policy with a full interface:</h3>
 <p>This is the <b>killer feature</b> of this proposal that attempts to fix all the limitations from above and provide a
     much more useful interface.</p>
 
@@ -162,16 +163,30 @@
 </p>
 <ul>
     <li>Multiple threads use the same <code>concurrent_unordered_map</code> for reads and writes simultaneously.</li>
-    <li>Multiple threads use <code><span class="cppkeyword">const </span>unsynchronized_view</code> on the same <code>concurrent_unordered_map</code>
+    <li>Multiple threads use <code><span class="cppkeyword">const </span>
+        <span style="background-color: red">unsynchronized_view</span> <span style="background-color: green">unordered_map_view</span>
+    </code> on the same <code>concurrent_unordered_map</code>
         simultaneously
         (no modifications through <code>concurrent_unordered_map</code> interface are allowed!).
     </li>
-    <li>Single thread uses <code>unsynchronized_view</code> (no modifications are allowed from other treads!).</li>
+    <li>Single thread uses <code><span style="background-color: red">unsynchronized_view</span>
+        <span style="background-color: green">unordered_map_view</span></code> (no modifications are allowed from other treads!).</li>
     <li>Multiple threads use the same <code><span class="cppkeyword">const </span>concurrent_unordered_map&amp;</code>
         for reads and multiple threads
-        use <code><span class="cppkeyword">const </span>unsynchronized_view</code> on the same concurrent_unordered_map
+        use <code><span class="cppkeyword">const </span><span style="background-color: red">unsynchronized_view</span>
+        <span style="background-color: green">unordered_map_view</span></code> on the same concurrent_unordered_map
         simultaneously
-        (ineffective: use multiple <code><span class="cppkeyword">const </span>unsynchronized_view</code> instead).
+        (ineffective: use multiple <code><span class="cppkeyword">const </span>
+            <span style="background-color: red">unsynchronized_view</span>
+            <span style="background-color: green">unordered_map_view</span></code> instead).
+    </li>
+    <li>
+        <span style="background-color: green">
+        A user can select whether or not to take lock on whole table contents when it creates view. It can be useful if we
+        wanna to suspend concurrent usage by multiple threads to take for example snapshot of contents and serialize state to
+        some storage. If the user decided to use view without lock it should be sure that there is no concurrent access form other threads,
+        otherwise it leads to undefined behaviour.
+        </span>
     </li>
 </ul>
 
@@ -190,6 +205,23 @@
     updated depending on value that is in the container. Without a
     visitation, there's no way to do that safely,
     as all the functions return values by copy. See examples <a href="#exampleB">B</a> and <a href="#exampleC">C</a>.
+</p>
+
+<h3><span style="background-color: green">G. Allow to iterate over contents of the container:</span></h3>
+<p>
+    <span style="background-color: green">
+       We've added ability to visit all elements of the container but without appropriate locks.
+       In this case contents can be occasionally changed during iteration. Such functionality can be useful for debugging.
+    </span>
+</p>
+
+<h3><span style="background-color: green">H. Usage of forwarding references:</span></h3>
+<p>
+    <span style="background-color: green">
+        Most STL containers was added many years ago. And it was actually earlier than C++11 standard where was added move semantics.
+        We considered to use forwarding references instead of method overload to be save copy operations if they
+        are movable and get rid of multiple functions with similar signature but different type of arguments.
+    </span>
 </p>
 
 <h2>III. Draft interface and informal description</h2>
@@ -268,14 +300,18 @@
     <span class="cppcomment">// concurrent-safe element retrieval:
 </span><span style="background-color: red">    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) const;
     mapped_type find(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>mapped_type&amp; default_value) const;</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
+    <span style="background-color: green">
+    <span class="cppcomment">// the following methods expects that mapped_type is copyable, we just return a copy of the element if it is in the container</span>
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
     optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;</span>
 
 
-    <span class="cppcomment">// executes `f` under a `lock` if `key` is in *this.
-</span>    <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppcomment">// executes `f` under a `lock` if `key` is in *this</span>
+    <span style="background-color: green"><span class="cppcomment">// the user should avoid of using heavy functions af `f` parameter because it can dramatically slow access of concurrent threads to the bucket with the key.</span>
+    <span class="cppcomment">// the method allows get or change value by key where it is not copy constructable</span></span>
+    <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);</span>
     <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);</span>
@@ -438,11 +474,11 @@
             class="cppkeyword">typename</span>... Args&gt;
     iterator emplace_hint(const_iterator hint, Args&amp;&amp;... args);</span>
 
-    pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp; x);
-    pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp;&amp; x);
-    <span style="background-color: red"><span class="cppkeyword">template</span>&lt;<span
-            class="cppkeyword">class </span>P&gt; pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(P&amp;&amp; x);
-    iterator insert(const_iterator hint, <span class="cppkeyword">const </span>value_type&amp; x);
+    <span style="background-color: red">pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp; x);
+    pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp;&amp; x);</span>
+    <span style="background-color: green"><span style="cppcomment">// We considered have only forwarding reference variant of insert to avoid interface overloading</span></span>
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>P&gt; pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(P&amp;&amp; x);
+    <span style="background-color: red">iterator insert(const_iterator hint, <span class="cppkeyword">const </span>value_type&amp; x);
     iterator insert(const_iterator hint, <span class="cppkeyword">const </span>value_type&amp;&amp; x);
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>P&gt; pair&lt;iterator, <span
                 class="cppkeyword">bool</span>&gt; insert(const_iterator hint, P&amp;&amp; x);</span>
@@ -545,6 +581,10 @@
         simultaneously (ineffective: use multiple <span style="background-color: red"><code><span class="cppkeyword">const </span>unsynchronized_view</code></span><span
                 style="background-color: green"><code><span
                 class="cppkeyword">const </span>unordered_map_view</code></span> instead).
+    </li>
+    <li>
+        <span style="background-color: green"> We decided to get rid of insert like operations with hit to get more
+            flexibility with concrete implementation of the container</span>
     </li>
 </ul>
 <p><i> - end note.</i> ]
