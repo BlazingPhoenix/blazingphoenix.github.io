@@ -73,7 +73,7 @@
     </style>
 </head>
 <body bgcolor="#ffffff">
-<address>Document number: P0652R0</address>
+<address>Document number: D0652R1</address>
 <address>Project: Programming Language C++</address>
 <address>Audience: SG1 Concurrency</address>
 <address>&nbsp;</address>
@@ -82,11 +82,12 @@
 </address>
 <address>Anton Malakhov, Intel Corp., &lt;<a href="mailto:anton.malakhov@intel.com">anton.malakhov@intel.com</a>&gt;
 </address>
-<address>Antony Polukhin, Yandex Ltd, &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a
+<address>Antony Polukhin, Yandex.Taxi Ltd, &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a
         href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;
 </address>
 <address>&nbsp;</address>
-<address>Date: 2017-06-14</address>
+<address><span style="background-color: red">Date: 2017-06-14</span></address>
+<address><span style="background-color: green">Date: 2018-06-27</span></address>
 <h1>Concurrent associative data structure with unsynchronized view</h1>
 
 <h2>I. Introduction and Motivation</h2>
@@ -315,10 +316,10 @@
     <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);</span>
     <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);</span>
+    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
 
     <span style="background-color: green"><span class="cppcomment">// executes `f` under a `lock` for all `key` is in *this, but we don't make global table lock on the operation, in this case you can observe some non repeatable read issues</span>
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f);
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span
                 class="cppkeyword">const</span>;</span>
@@ -362,17 +363,16 @@
     <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>value_type&amp; val);</span>
     <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, value_type&amp;&amp; val);</span>
     <span style="background-color:
-    green"><span style="background-color:
     green"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span
             class="cppkeyword">typename</span>... Args&gt;
-    size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span></span>
+    size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
 
     <span style="background-color: red">size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);</span>
     <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
-    size_type erase(<span class="cppkeyword">const </span>K&&amp; key);</span>
+    size_type erase(K&&amp; key);</span>
     <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
-    <span class="cppkeyword">void</span> erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
+    <span class="cppkeyword">size_type</span> erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
 
     <span style="background-color: green"><span class="cppcomment">// whole container state modifiers:</span></span>
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
@@ -591,7 +591,103 @@
 </p>
 
 
-<h2>IV. Some usage examples in pseudo code</h2>
+<h2><span style="background-color: green">IV. Detailed description of main methods</span></h2>
+<h3><span style="background-color: green"><a name="lookupElements"> A. </a>Lookup elements:</span></h3>
+<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
+    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
+    mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
+</pre>
+<span style="background-color: green">
+    Method <code>find</code> can be used to obtain a value by a key if container doesn't have the key it returns empty <code>optional</code>,
+    the second version of <code>find</code> in this case returns default value constructed from argument list after key argument.
+    Method <code>visit</code> instead of <code>find</code> doesn't copy anything and can be used to access non copyable types.
+    Functor F should accept <code><span class="cppkeyword">const</span> mapped_type&</code> as argument.
+</span>
+
+<h3><span style="background-color: green"><a name="addElements"> B. </a>Add elements:</span></h3>
+<pre><span style="background-color: green">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
+    <span class="cppkeyword">bool</span> emplace(K&amp;&amp; key, Args&amp;&amp;... val);
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
+    <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);
+    <span class="cppkeyword">template</span>&lt;<span
+            class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
+    <span class="cppkeyword">bool</span> insert_or_assign(K&amp;&amp; key, Args&amp;&amp;... val);</span>
+</pre>
+<span style="background-color: green">
+    We considered to remove <code>operator []</code> from interface because it is complex and relies on copying.
+    Instead of it we've made methods <code>emplace</code> and <code>emplace_or_visit</code>. The first one returns <code>true</code>
+    if it created element and <code>false</code> if the key was already in container. Method <code>emplace_or_visit</code>
+    also tries to add element but if it can't do it runs functor F with existing value of type <code>mapped_type&</code> as argument.
+    Method <code>insert_or_assign</code> also tries to add element and if it unable to do it just overwrites exsiting value.
+</span>
+<h3><span style="background-color: green"><a name="modifyElements"> C. </a>Modify elements:</span></h3>
+<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span
+            class="cppkeyword">typename</span>... Args&gt;
+    size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
+</pre>
+<span style="background-color: green">
+    Method <code>visit</code> works like <code><span class="cppkeyword">const</span></code> method with the same name,
+    but functor F takes argument by non <code><span class="cppkeyword">const</span></code> reference and actually can modify it.
+    Method <code>update</code> overwrites element by key, return value should be interpreted as number of changed elements.
+</span>
+<h3><span style="background-color: green"><a name="eraseElements"> D. </a>Erase elements:</span></h3>
+<pre><span style="background-color: green">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
+    size_type erase(K&&amp; key);
+    <span class="cppkeyword">template</span>&lt;<span
+            class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
+    size_type erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
+</pre>
+<span style="background-color: green">
+    Method <code>erase</code> has the same meaning as at <code>unordered_map</code>'s method with similar signature.
+    It just removes element by key and returns number of removed elements.
+    Method <code>erase_and_visit</code> also calls functor F on value before remove something.
+</span>
+<h3><span style="background-color: green"><a name="observers"> E. </a>Internal state observers:</span></h3>
+<pre><span style="background-color: green">    allocator_type get_allocator() <span class="cppkeyword">const</span>;
+    hasher hash_function() <span class="cppkeyword">const</span>;
+    key_equal key_eq() <span class="cppkeyword">const</span>;</span>
+</pre><span style="background-color: green">
+    The following methods have the same semantics as at <code>unordered_map</code>. They provide ability to access state
+    of the container and get a copy of allocator, hash function and key comparator respectively.
+</span>
+<h3><span style="background-color: green"><a name="wholeStateModifiers"> F. </a>Whole container state operations:</span></h3>
+<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
+            class="cppkeyword">class </span>P2&gt;
+    <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp; source);
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
+            class="cppkeyword">class </span>P2&gt;
+    <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; source);
+    <span class="cppkeyword">void</span> swap(concurrent_unordered_map&amp; other);
+    <span class="cppkeyword">void</span> clear() <span class="cppkeyword">noexcept</span>;</span>
+</pre><span style="background-color: green">
+    Method <code>visit_all</code> is designed to iterate over container contents without whole table lock to make
+    some kind of debug output, during this operation container can change and it doesn't guarantee full consistency.
+    Methods <code>merge</code> fully locks source and moves all elements into <code>*<span class="cppkeyword">this</span></code>.
+    Method <code>swap</code> exchanges the contents of the container with those of other. Does not invoke any move, copy, or swap operations on individual elements.
+    If all allocator objects considered the same, hash function and key comparator are swappable without exception then we can
+    consider <code>swap</code> method <code><span class="cppkeyword">noexcept</span></code>. Method <code>clear</code>
+    locks all contents of the container and removes everything from it.
+</span>
+<h3><span style="background-color: green"><a name="unordered_map_view"> G. </a>unordered_map like view policy:</span></h3>
+<pre><span style="background-color: green">    unordered_map_view make_unordered_map_view(<span class="cppkeyword">bool </span>lock = <span
+        class="cppkeyword">false</span>) <span class="cppkeyword">const </span><span
+        class="cppkeyword">noexcept</span>;</span>
+</pre><span style="background-color: green">
+    Method <code>make_unordered_map_view</code> creates a view of container contents that have very similar interface to
+    <code>std::unordered_map</code>. If argument is <code><span class="cppkeyword">true</span></code> it locks all container contents and unlock at destructor of
+    view object. If argument is <code><span class="cppkeyword">false</span></code> we doesn't lock anything and we consider that user should beware of concurrent
+    access to container. The view doesn't owns the container contents i.e. it should have lower life scope then the container
+    otherwise it leads to undefined behaviour.
+</span>
+
+<h2>V. Some usage examples in pseudo code</h2>
 <h3><a name="exampleA">A.</a> User session cache</h3>
 <pre><span class="cppkeyword">#include</span> &lt;concurrent_hash_map&gt;
 <span class="cppkeyword">#include</span> &lt;string_view&gt;
@@ -802,7 +898,7 @@ int main() {
     }
 };</span>
 </pre>
-<h2><span style="background-color: green">V. Performance benchmark</span></h2>
+<h2><span style="background-color: green">VI. Performance benchmark</span></h2>
 
 <!-- amCharts javascript sources -->
 <script type="text/javascript" src="https://www.amcharts.com/lib/3/amcharts.js"></script>
