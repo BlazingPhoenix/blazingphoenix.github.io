@@ -87,7 +87,7 @@
 </address>
 <address>&nbsp;</address>
 <address><span style="background-color: red">Date: 2017-06-14</span></address>
-<address><span style="background-color: green">Date: 2018-06-27</span></address>
+<address><span style="background-color: limegreen">Date: 2018-06-27</span></address>
 <h1>Concurrent associative data structure with unsynchronized view</h1>
 
 <h2>I. Introduction and Motivation</h2>
@@ -149,7 +149,7 @@
     Instead of that, we came up with an idea of <b>unsynchronized view/policy</b>.</p>
 
 <h3>D. <span style="background-color: red">Unsynchronized view</span>
-    <span style="background-color: green">View</span>/policy with a full interface:</h3>
+    <span style="background-color: limegreen">View</span>/policy with a full interface:</h3>
 <p>This is the <b>killer feature</b> of this proposal that attempts to fix all the limitations from above and provide a
     much more useful interface.</p>
 
@@ -165,24 +165,24 @@
 <ul>
     <li>Multiple threads use the same <code>concurrent_unordered_map</code> for reads and writes simultaneously.</li>
     <li>Multiple threads use <code><span class="cppkeyword">const </span>
-        <span style="background-color: red">unsynchronized_view</span> <span style="background-color: green">unordered_map_view</span>
+        <span style="background-color: red">unsynchronized_view</span> <span style="background-color: limegreen">unordered_map_view</span>
     </code> on the same <code>concurrent_unordered_map</code>
         simultaneously
         (no modifications through <code>concurrent_unordered_map</code> interface are allowed!).
     </li>
     <li>Single thread uses <code><span style="background-color: red">unsynchronized_view</span>
-        <span style="background-color: green">unordered_map_view</span></code> (no modifications are allowed from other treads!).</li>
+        <span style="background-color: limegreen">unordered_map_view</span></code> (no modifications are allowed from other treads!).</li>
     <li>Multiple threads use the same <code><span class="cppkeyword">const </span>concurrent_unordered_map&amp;</code>
         for reads and multiple threads
         use <code><span class="cppkeyword">const </span><span style="background-color: red">unsynchronized_view</span>
-        <span style="background-color: green">unordered_map_view</span></code> on the same concurrent_unordered_map
+        <span style="background-color: limegreen">unordered_map_view</span></code> on the same concurrent_unordered_map
         simultaneously
         (ineffective: use multiple <code><span class="cppkeyword">const </span>
             <span style="background-color: red">unsynchronized_view</span>
-            <span style="background-color: green">unordered_map_view</span></code> instead).
+            <span style="background-color: limegreen">unordered_map_view</span></code> instead).
     </li>
     <li>
-        <span style="background-color: green">
+        <span style="background-color: limegreen">
         A user can select whether or not to take lock on whole table contents when it creates view. It can be useful if we
         wanna to suspend concurrent usage by multiple threads to take for example snapshot of contents and serialize state to
         some storage. If the user decided to use view without lock it should be sure that there is no concurrent access form other threads,
@@ -208,17 +208,17 @@
     as all the functions return values by copy. See examples <a href="#exampleB">B</a> and <a href="#exampleC">C</a>.
 </p>
 
-<h3><span style="background-color: green">G. Allow to iterate over contents of the container:</span></h3>
+<h3><span style="background-color: limegreen">G. Allow to iterate over contents of the container:</span></h3>
 <p>
-    <span style="background-color: green">
+    <span style="background-color: limegreen">
        We've added ability to visit all elements of the container but without appropriate locks.
        In this case contents can be occasionally changed during iteration. Such functionality can be useful for debugging.
     </span>
 </p>
 
-<h3><span style="background-color: green">H. Usage of forwarding references:</span></h3>
+<h3><span style="background-color: limegreen">H. Usage of forwarding references:</span></h3>
 <p>
-    <span style="background-color: green">
+    <span style="background-color: limegreen">
         Most STL containers was added many years ago. And it was actually earlier than C++11 standard where was added move semantics.
         We considered to use forwarding references instead of method overload to be save copy operations if they
         are movable and get rid of multiple functions with similar signature but different type of arguments.
@@ -248,7 +248,7 @@
   <span class="cppkeyword">class </span>concurrent_unordered_map {
   <span class="cppkeyword">public</span>:
     <span class="cppcomment">// types:
-    </span><span style="background-color: green"><span class="cppkeyword">class </span>unordered_map_view;</span>
+    </span><span style="background-color: limegreen"><span class="cppkeyword">class </span>unordered_map_view;</span>
     <span class="cppkeyword">using</span> key_type          = Key;
     <span class="cppkeyword">using</span> mapped_type       = T;
     <span class="cppkeyword">using</span> value_type        = pair&lt;<span class="cppkeyword">const </span>Key, T&gt;;
@@ -260,7 +260,7 @@
     <span class="cppcomment">// construct/destroy:
 </span>    <span style="background-color: red">concurrent_unordered_map() <span class="cppkeyword">noexcept</span>;
     <span class="cppkeyword">explicit</span> concurrent_unordered_map(size_type n,</span>
-    <span style="background-color: green"><span class="cppkeyword">explicit</span> concurrent_unordered_map(size_type n = implementation-defined,</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">explicit</span> concurrent_unordered_map(size_type n = implementation-defined,</span>
                                       <span class="cppkeyword">const </span>Hasher&amp; hf = hasher(),
                                       <span class="cppkeyword">const </span>key_equal&amp; eql = key_equal(),
                                       <span class="cppkeyword">const </span>allocator_type&amp; a = allocator_type());
@@ -282,7 +282,7 @@
     <span style="background-color: red">
     // unsychronized view/policy:
     unsyncronized_view&lt;Key, T, Hasher, Equality, Allocator&gt; lock_table() const noexcept;</span>
-    <span style="background-color: green"><span class="cppcomment">// unordered_map like view with ability to take global table lock
+    <span style="background-color: limegreen"><span class="cppcomment">// unordered_map like view with ability to take global table lock
 </span>    unordered_map_view make_unordered_map_view(<span class="cppkeyword">bool </span>lock = <span
             class="cppkeyword">false</span>) <span class="cppkeyword">const </span><span
             class="cppkeyword">noexcept</span>;</span>
@@ -293,7 +293,7 @@
             class="cppkeyword">noexcept</span>;
     concurrent_unordered_map&amp; <span class="cppkeyword">operator</span>=(initializer_list&lt;value_type&gt;il);
 
-    <span style="background-color: green"><span class="cppcomment">// members observers:</span>
+    <span style="background-color: limegreen"><span class="cppcomment">// members observers:</span>
     allocator_type get_allocator() <span class="cppkeyword">const</span>;
     hasher hash_function() <span class="cppkeyword">const</span>;
     key_equal key_eq() <span class="cppkeyword">const</span>;</span>
@@ -301,7 +301,7 @@
     <span class="cppcomment">// concurrent-safe element retrieval:
 </span><span style="background-color: red">    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) const;
     mapped_type find(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>mapped_type&amp; default_value) const;</span>
-    <span style="background-color: green">
+    <span style="background-color: limegreen">
     <span class="cppcomment">// the following methods expects that mapped_type is copyable, we just return a copy of the element if it is in the container</span>
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
     optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
@@ -310,16 +310,16 @@
 
 
     <span class="cppcomment">// executes `f` under a `lock` if `key` is in *this</span>
-    <span style="background-color: green"><span class="cppcomment">// the user should avoid of using heavy functions af `f` parameter because it can dramatically slow access of concurrent threads to the bucket with the key.</span>
+    <span style="background-color: limegreen"><span class="cppcomment">// the user should avoid of using heavy functions af `f` parameter because it can dramatically slow access of concurrent threads to the bucket with the key.</span>
     <span class="cppcomment">// the method allows get or change value by key where it is not copy constructable</span></span>
     <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
 
-    <span style="background-color: green"><span class="cppcomment">// executes `f` under a `lock` for all `key` is in *this, but we don't make global table lock on the operation, in this case you can observe some non repeatable read issues</span>
+    <span style="background-color: limegreen"><span class="cppcomment">// executes `f` under a `lock` for all `key` is in *this, but we don't make global table lock on the operation, in this case you can observe some non repeatable read issues</span>
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span
                 class="cppkeyword">const</span>;</span>
@@ -328,7 +328,7 @@
 </span>    <span style="background-color: red"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> F, <span
             class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">void</span> emplace_or_visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span></span>
-    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
 
@@ -336,7 +336,7 @@
     <span style="background-color: red"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> emplace(<span class="cppkeyword">const</span> key_type&amp;&amp; key, Args&amp;&amp;... val);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> emplace(K&amp;&amp; key, Args&amp;&amp;... val);</span>
     <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span
@@ -354,7 +354,7 @@
     <span class="cppkeyword">bool</span> insert_or_assign(<span class="cppkeyword">const </span>key_type&amp; key, V&amp;&amp; val);
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> V&gt;
     <span class="cppkeyword">bool</span> insert_or_assign(key_type&amp;&amp; key, V&amp;&amp; val);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> insert_or_assign(K&amp;&amp; key, Args&amp;&amp;... val);</span>
 
@@ -368,13 +368,13 @@
     size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
 
     <span style="background-color: red">size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
     size_type erase(K&&amp; key);</span>
-    <span style="background-color: green"><span class="cppkeyword">template</span>&lt;<span
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">size_type</span> erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
 
-    <span style="background-color: green"><span class="cppcomment">// whole container state modifiers:</span></span>
+    <span style="background-color: limegreen"><span class="cppcomment">// whole container state modifiers:</span></span>
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
             class="cppkeyword">class </span>P2&gt;
     <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp; source);
@@ -393,7 +393,7 @@
 </pre>
 
 <p><span style="background-color: red"><code>unsynchronized_view</code></span><span
-        style="background-color: green"><code>unordered_map_view</code></span> class refers <code>concurrent_unordered_map</code>
+        style="background-color: limegreen"><code>unordered_map_view</code></span> class refers <code>concurrent_unordered_map</code>
     and provides a concurrent unsafe
     interface to <code>concurrent_unordered_map</code> that satisfies unordered associative container requirements
     (except iterator
@@ -401,11 +401,11 @@
     operations).</p>
 <p>[ <i>Note:</i> Concurrent non const member functions calls on the instances of <span
         style="background-color: red"><code>unsynchronized_view</code></span><span
-        style="background-color: green"><code>unordered_map_view</code></span> referencing
+        style="background-color: limegreen"><code>unordered_map_view</code></span> referencing
     the same <code>concurrent_unordered_map</code> are not safe! <i>- end note. </i>] </p>
 <p>[ <i>Note:</i> Concurrent member functions calls on the <code>concurrent_unordered_map</code> instance <i>A</i> and
     on the <span style="background-color: red"><code>unsynchronized_view</code></span><span
-            style="background-color: green"><code>unordered_map_view</code></span> referencing
+            style="background-color: limegreen"><code>unordered_map_view</code></span> referencing
     the instance <i>A</i> are not safe! <i>- end note. </i>] </p>
 
 
@@ -413,7 +413,7 @@
         class="cppkeyword">class </span>Hasher, <span class="cppkeyword">class </span>Equality, <span
         class="cppkeyword">class </span>Allocator&gt;
     <span style="background-color: red"><span class="cppkeyword">class </span>unsynchronized_view {</span>
-    <span style="background-color: green"><span class="cppkeyword">class </span>unordered_map_view {</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">class </span>unordered_map_view {</span>
     concurrent_unordered_map&lt;Key, T, Hasher, Equality, Allocator&gt;&amp; delegate; <span class="cppcomment">// exposition only
 </span>
   <span class="cppkeyword">public</span>:
@@ -443,7 +443,7 @@
     unsynchronized_view&amp; <span class="cppkeyword">operator</span>=(<span class="cppkeyword">const </span>unsynchronized_view&amp;) <span
                 class="cppkeyword">noexcept</span> = default;
     ~unsynchronized_view() = default;</span>
-    <span style="background-color: green">unordered_map_view() = delete;
+    <span style="background-color: limegreen">unordered_map_view() = delete;
     unordered_map_view(concurrent_unordered_map&lt;Key, T, Hasher, Equality, Allocator&gt;&amp; delegate);
     unordered_map_view(<span class="cppkeyword">const </span>unordered_map_view&amp;) <span
                 class="cppkeyword">noexcept</span> = default;
@@ -476,7 +476,7 @@
 
     <span style="background-color: red">pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp; x);
     pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(<span class="cppkeyword">const </span>value_type&amp;&amp; x);</span>
-    <span style="background-color: green"><span style="cppcomment">// We considered have only forwarding reference variant of insert to avoid interface overloading</span></span>
+    <span style="background-color: limegreen"><span style="cppcomment">// We considered have only forwarding reference variant of insert to avoid interface overloading</span></span>
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>P&gt; pair&lt;iterator, <span class="cppkeyword">bool</span>&gt; insert(P&amp;&amp; x);
     <span style="background-color: red">iterator insert(const_iterator hint, <span class="cppkeyword">const </span>value_type&amp; x);
     iterator insert(const_iterator hint, <span class="cppkeyword">const </span>value_type&amp;&amp; x);
@@ -555,7 +555,7 @@
 
     <span class="cppcomment">// hash policy:
     </span><span class="cppkeyword">void</span> rehash(size_type n);
-    <span style="background-color: green"><span class="cppkeyword">float</span> load_factor() <span class="cppkeyword">const noexcept</span>;</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">float</span> load_factor() <span class="cppkeyword">const noexcept</span>;</span>
   };
 }
 </pre>
@@ -565,25 +565,25 @@
 <ul>
     <li>Multiple threads use the same <code>concurrent_unordered_map</code> for reads and writes simultaneously</li>
     <li>Multiple threads use <span style="background-color: red"><code><span class="cppkeyword">const </span>unsynchronized_view</code></span><span
-            style="background-color: green"><code><span class="cppkeyword">const </span>unordered_map_view</code></span>
+            style="background-color: limegreen"><code><span class="cppkeyword">const </span>unordered_map_view</code></span>
         on the same <code>concurrent_unordered_map</code> simultaneously
         (no modifications through <code>concurrent_unordered_map</code> interface are allowed!)
     </li>
     <li>Single thread uses <span style="background-color: red"><code>unsynchronized_view</code></span><span
-            style="background-color: green"><code>unordered_map_view</code></span> (no modifications are allowed from
+            style="background-color: limegreen"><code>unordered_map_view</code></span> (no modifications are allowed from
         other treads!)
     </li>
     <li>Multiple threads use the same <code><span class="cppkeyword">const </span>concurrent_unordered_map&amp;</code>
         for reads and multiple threads use <span style="background-color: red"><code><span
                 class="cppkeyword">const </span>unsynchronized_view</code></span><span
-                style="background-color: green"><code><span
+                style="background-color: limegreen"><code><span
                 class="cppkeyword">const </span>unordered_map_view</code></span> on the same concurrent_unordered_map
         simultaneously (ineffective: use multiple <span style="background-color: red"><code><span class="cppkeyword">const </span>unsynchronized_view</code></span><span
-                style="background-color: green"><code><span
+                style="background-color: limegreen"><code><span
                 class="cppkeyword">const </span>unordered_map_view</code></span> instead).
     </li>
     <li>
-        <span style="background-color: green"> We decided to get rid of insert like operations with hit to get more
+        <span style="background-color: limegreen"> We decided to get rid of insert like operations with hit to get more
             flexibility with concrete implementation of the container</span>
     </li>
 </ul>
@@ -591,24 +591,24 @@
 </p>
 
 
-<h2><span style="background-color: green">IV. Detailed description of main methods</span></h2>
-<h3><span style="background-color: green"><a name="lookupElements"> A. </a>Lookup elements:</span></h3>
-<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
+<h2><span style="background-color: limegreen">IV. Detailed description of main methods</span></h2>
+<h3><span style="background-color: limegreen"><a name="lookupElements"> A. </a>Lookup elements:</span></h3>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
     optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;
     <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
 </pre>
-<span style="background-color: green">
+<span style="background-color: limegreen">
     Method <code>find</code> can be used to obtain a value by a key if container doesn't have the key it returns empty <code>optional</code>,
     the second version of <code>find</code> in this case returns default value constructed from argument list after key argument.
     Method <code>visit</code> instead of <code>find</code> doesn't copy anything and can be used to access non copyable types.
     Functor F should accept <code><span class="cppkeyword">const</span> mapped_type&</code> as argument.
 </span>
 
-<h3><span style="background-color: green"><a name="addElements"> B. </a>Add elements:</span></h3>
-<pre><span style="background-color: green">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
+<h3><span style="background-color: limegreen"><a name="addElements"> B. </a>Add elements:</span></h3>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> emplace(K&amp;&amp; key, Args&amp;&amp;... val);
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);
@@ -616,47 +616,47 @@
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> insert_or_assign(K&amp;&amp; key, Args&amp;&amp;... val);</span>
 </pre>
-<span style="background-color: green">
+<span style="background-color: limegreen">
     We considered to remove <code>operator []</code> from interface because it is complex and relies on copying.
     Instead of it we've made methods <code>emplace</code> and <code>emplace_or_visit</code>. The first one returns <code>true</code>
     if it created element and <code>false</code> if the key was already in container. Method <code>emplace_or_visit</code>
     also tries to add element but if it can't do it runs functor F with existing value of type <code>mapped_type&</code> as argument.
     Method <code>insert_or_assign</code> also tries to add element and if it unable to do it just overwrites exsiting value.
 </span>
-<h3><span style="background-color: green"><a name="modifyElements"> C. </a>Modify elements:</span></h3>
-<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+<h3><span style="background-color: limegreen"><a name="modifyElements"> C. </a>Modify elements:</span></h3>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span
             class="cppkeyword">typename</span>... Args&gt;
     size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
 </pre>
-<span style="background-color: green">
+<span style="background-color: limegreen">
     Method <code>visit</code> works like <code><span class="cppkeyword">const</span></code> method with the same name,
     but functor F takes argument by non <code><span class="cppkeyword">const</span></code> reference and actually can modify it.
     Method <code>update</code> overwrites element by key, return value should be interpreted as number of changed elements.
 </span>
-<h3><span style="background-color: green"><a name="eraseElements"> D. </a>Erase elements:</span></h3>
-<pre><span style="background-color: green">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
+<h3><span style="background-color: limegreen"><a name="eraseElements"> D. </a>Erase elements:</span></h3>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
     size_type erase(K&&amp; key);
     <span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
     size_type erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
 </pre>
-<span style="background-color: green">
+<span style="background-color: limegreen">
     Method <code>erase</code> has the same meaning as at <code>unordered_map</code>'s method with similar signature.
     It just removes element by key and returns number of removed elements.
     Method <code>erase_and_visit</code> also calls functor F on value before remove something.
 </span>
-<h3><span style="background-color: green"><a name="observers"> E. </a>Internal state observers:</span></h3>
-<pre><span style="background-color: green">    allocator_type get_allocator() <span class="cppkeyword">const</span>;
+<h3><span style="background-color: limegreen"><a name="observers"> E. </a>Internal state observers:</span></h3>
+<pre><span style="background-color: limegreen">    allocator_type get_allocator() <span class="cppkeyword">const</span>;
     hasher hash_function() <span class="cppkeyword">const</span>;
     key_equal key_eq() <span class="cppkeyword">const</span>;</span>
-</pre><span style="background-color: green">
+</pre><span style="background-color: limegreen">
     The following methods have the same semantics as at <code>unordered_map</code>. They provide ability to access state
     of the container and get a copy of allocator, hash function and key comparator respectively.
 </span>
-<h3><span style="background-color: green"><a name="wholeStateModifiers"> F. </a>Whole container state operations:</span></h3>
-<pre><span style="background-color: green">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
+<h3><span style="background-color: limegreen"><a name="wholeStateModifiers"> F. </a>Whole container state operations:</span></h3>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
             class="cppkeyword">class </span>P2&gt;
@@ -666,7 +666,7 @@
     <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; source);
     <span class="cppkeyword">void</span> swap(concurrent_unordered_map&amp; other);
     <span class="cppkeyword">void</span> clear() <span class="cppkeyword">noexcept</span>;</span>
-</pre><span style="background-color: green">
+</pre><span style="background-color: limegreen">
     Method <code>visit_all</code> is designed to iterate over container contents without whole table lock to make
     some kind of debug output, during this operation container can change and it doesn't guarantee full consistency.
     Methods <code>merge</code> fully locks source and moves all elements into <code>*<span class="cppkeyword">this</span></code>.
@@ -675,11 +675,11 @@
     consider <code>swap</code> method <code><span class="cppkeyword">noexcept</span></code>. Method <code>clear</code>
     locks all contents of the container and removes everything from it.
 </span>
-<h3><span style="background-color: green"><a name="unordered_map_view"> G. </a>unordered_map like view policy:</span></h3>
-<pre><span style="background-color: green">    unordered_map_view make_unordered_map_view(<span class="cppkeyword">bool </span>lock = <span
+<h3><span style="background-color: limegreen"><a name="unordered_map_view"> G. </a>unordered_map like view policy:</span></h3>
+<pre><span style="background-color: limegreen">    unordered_map_view make_unordered_map_view(<span class="cppkeyword">bool </span>lock = <span
         class="cppkeyword">false</span>) <span class="cppkeyword">const </span><span
         class="cppkeyword">noexcept</span>;</span>
-</pre><span style="background-color: green">
+</pre><span style="background-color: limegreen">
     Method <code>make_unordered_map_view</code> creates a view of container contents that have very similar interface to
     <code>std::unordered_map</code>. If argument is <code><span class="cppkeyword">true</span></code> it locks all container contents and unlock at destructor of
     view object. If argument is <code><span class="cppkeyword">false</span></code> we doesn't lock anything and we consider that user should beware of concurrent
@@ -898,7 +898,7 @@ int main() {
     }
 };</span>
 </pre>
-<h2><span style="background-color: green">VI. Performance benchmark</span></h2>
+<h2><span style="background-color: limegreen">VI. Performance benchmark</span></h2>
 
 <!-- amCharts javascript sources -->
 <script type="text/javascript" src="https://www.amcharts.com/lib/3/amcharts.js"></script>
@@ -1007,7 +1007,7 @@ int main() {
         }
     );
 </script>
-<span style="background-color: green">
+<span style="background-color: limegreen">
 We've compared our implementation with a couple of simple other implementations of concurrent unordered map.<br/>
 1) The simplest implementation is just a regular unordered_map with guarded by a single mutex, we've implemented mutex guard as boost::synchronized_value.<br/>
 2) Many programming languages has internal implementation of concurrent hash map just as fixed number of regular hash maps, each of them has it's own mutex and represents some kind of hash table shard.<br/>
