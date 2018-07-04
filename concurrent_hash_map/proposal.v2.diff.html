@@ -303,11 +303,8 @@
     mapped_type find(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>mapped_type&amp; default_value) const;</span>
     <span style="background-color: limegreen">
     <span class="cppcomment">// the following methods expects that mapped_type is copyable, we just return a copy of the element if it is in the container</span>
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
-    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
-    mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;</span>
-
+    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) const;
+    mapped_type find(<span class="cppkeyword">const</span> key_type&amp; key, <span class="cppkeyword">const</span> mapped_type&amp;... default_value) const;</span>
 
     <span class="cppcomment">// executes `f` under a `lock` if `key` is in *this</span>
     <span style="background-color: limegreen"><span class="cppcomment">// the user should avoid of using heavy functions af `f` parameter because it can dramatically slow access of concurrent threads to the bucket with the key.</span>
