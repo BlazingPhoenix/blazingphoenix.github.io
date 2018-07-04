@@ -314,14 +314,14 @@
     <span class="cppcomment">// the method allows get or change value by key where it is not copy constructable</span></span>
     <span style="background-color: red"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
     <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f);</span>
-    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);</span>
-    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const</span> key_type&amp; key, F&amp; f);</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const</span> key_type&amp; key, F&amp f) <span class="cppkeyword">const</span>;</span>
 
     <span style="background-color: limegreen"><span class="cppcomment">// executes `f` under a `lock` for all `key` is in *this, but we don't make global table lock on the operation, in this case you can observe some non repeatable read issues</span>
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit_all(F&amp; f) <span
                 class="cppkeyword">const</span>;</span>
 
     <span class="cppcomment">// executes `f` under a `lock`. If `key` is not in *this calls emplace(std::forward&lt;Args&gt;(args)...) first.
@@ -330,7 +330,7 @@
     <span class="cppkeyword">void</span> emplace_or_visit(<span class="cppkeyword">const </span>key_type&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span></span>
     <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
-    <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
+    <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp; f, Args&amp;&amp;... args);</span>
 
     <span class="cppcomment">// concurrent-safe modifiers:</span>
     <span style="background-color: red"><span class="cppkeyword">template</span>&lt;<span
@@ -362,17 +362,10 @@
 
     <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, <span class="cppkeyword">const </span>value_type&amp; val);</span>
     <span style="background-color: red">size_type update(<span class="cppkeyword">const </span>key_type&amp; key, value_type&amp;&amp; val);</span>
-    <span style="background-color:
-    green"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span
-            class="cppkeyword">typename</span>... Args&gt;
-    size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
+    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span>... Args&gt;
+    size_type update(<span class="cppkeyword">const</span> key_type&amp; key, Args&amp;&amp;... val);</span>
 
-    <span style="background-color: red">size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);</span>
-    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
-    size_type erase(K&&amp; key);</span>
-    <span style="background-color: limegreen"><span class="cppkeyword">template</span>&lt;<span
-            class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
-    <span class="cppkeyword">size_type</span> erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
+    size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);
 
     <span style="background-color: limegreen"><span class="cppcomment">// whole container state modifiers:</span></span>
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
@@ -593,12 +586,10 @@
 
 <h2><span style="background-color: limegreen">IV. Detailed description of main methods</span></h2>
 <h3><span style="background-color: limegreen"><a name="lookupElements"> A. </a>Lookup elements:</span></h3>
-<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K&gt;
-    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>K&amp;&amp; key) const;
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
-    mapped_type find(K&amp;&amp; key, Args&amp;&amp;... default_value) const;
-    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;</span>
+<pre><span style="background-color: limegreen">    optional&lt;mapped_type&gt; find(<span class="cppkeyword">const </span>key_type&amp; key) <span class="cppkeyword">const</span>;
+    mapped_type find(<span class="cppkeyword">const</span> key_type&amp; key, <span class="cppkeyword">const</span> mapped_type&amp; default_value) <span class="cppkeyword">const</span>;
+    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const</span> key_type&amp; key, F&amp; f) <span class="cppkeyword">const</span>;</span>
 </pre>
 <span style="background-color: limegreen">
     Method <code>find</code> can be used to obtain a value by a key if container doesn't have the key it returns empty <code>optional</code>,
@@ -611,7 +602,7 @@
 <pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> emplace(K&amp;&amp; key, Args&amp;&amp;... val);
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
-    <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);
+    <span class="cppkeyword">void</span> emplace_or_visit(K&amp;&amp; key, F&amp; f, Args&amp;&amp;... args);
     <span class="cppkeyword">template</span>&lt;<span
             class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span>... Args&gt;
     <span class="cppkeyword">bool</span> insert_or_assign(K&amp;&amp; key, Args&amp;&amp;... val);</span>
@@ -624,11 +615,10 @@
     Method <code>insert_or_assign</code> also tries to add element and if it unable to do it just overwrites exsiting value.
 </span>
 <h3><span style="background-color: limegreen"><a name="modifyElements"> C. </a>Modify elements:</span></h3>
-<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit(K&amp;&amp; key, F&amp;&amp; f);
-    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K, <span
-            class="cppkeyword">typename</span>... Args&gt;
-    size_type update(<span class="cppkeyword"></span>K&amp;&amp; key, Args&amp;&amp;... val);</span>
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const</span> key_type&amp; key, F&amp; f);
+    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span>... Args&gt;
+    size_type update(<span class="cppkeyword">const</span> key_type&amp; key, Args&amp;&amp;... val);</span>
 </pre>
 <span style="background-color: limegreen">
     Method <code>visit</code> works like <code><span class="cppkeyword">const</span></code> method with the same name,
@@ -636,16 +626,11 @@
     Method <code>update</code> overwrites element by key, return value should be interpreted as number of changed elements.
 </span>
 <h3><span style="background-color: limegreen"><a name="eraseElements"> D. </a>Erase elements:</span></h3>
-<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">typename</span> K&gt;
-    size_type erase(K&&amp; key);
-    <span class="cppkeyword">template</span>&lt;<span
-            class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F, <span class="cppkeyword">typename</span>... Args&gt;
-    size_type erase_and_visit(K&amp;&amp; key, F&amp;&amp; f, Args&amp;&amp;... args);</span>
+<pre><span style="background-color: limegreen">    size_type erase(<span class="cppkeyword">const</span> key_type&amp; key);
 </pre>
 <span style="background-color: limegreen">
     Method <code>erase</code> has the same meaning as at <code>unordered_map</code>'s method with similar signature.
     It just removes element by key and returns number of removed elements.
-    Method <code>erase_and_visit</code> also calls functor F on value before remove something.
 </span>
 <h3><span style="background-color: limegreen"><a name="observers"> E. </a>Internal state observers:</span></h3>
 <pre><span style="background-color: limegreen">    allocator_type get_allocator() <span class="cppkeyword">const</span>;
@@ -656,8 +641,8 @@
     of the container and get a copy of allocator, hash function and key comparator respectively.
 </span>
 <h3><span style="background-color: limegreen"><a name="wholeStateModifiers"> F. </a>Whole container state operations:</span></h3>
-<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> K, <span class="cppkeyword">typename</span> F&gt;
-    <span class="cppkeyword">void</span> visit_all(K&amp;&amp; key, F&amp;&amp; f) <span class="cppkeyword">const</span>;
+<pre><span style="background-color: limegreen">    <span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> F&gt;
+    <span class="cppkeyword">void</span> visit_all(F&amp; f) <span class="cppkeyword">const</span>;
     <span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span
             class="cppkeyword">class </span>P2&gt;
     <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp; source);
