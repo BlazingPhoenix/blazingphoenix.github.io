@@ -653,6 +653,7 @@ void merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; s
 <h2>IV. Some usage examples in pseudo code</h2>
 <h3><a name="exampleA">A.</a> User session cache</h3>
 <pre>#include &lt;concurrent_unordered_map&gt;
+#include &lt;chrono&gt;
 #include &lt;string_view&gt;
 #include &lt;memory&gt;
 
@@ -669,7 +670,7 @@ int main() {
 
     constexpr unsigned threads_count = 10;
     while(1) {
-        // concurrent work:
+        // concurrent work
         std::atomic&lt;int&gt; b{threads_count * 100500};
         thread threads[threads_count];
 
@@ -687,16 +688,24 @@ int main() {
         }
 
         // accepting users
+        auto start = std::chrono::system_clock::now();
         while (--b &gt; 0) {
             auto [new_user_name, user] = co_await get_new_user();
             users.insert(new_user_name, user);
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start) > 5000) {
+                // debug print rough contents each 5 seconds
+                users.visit_all([] (const string_view& name, const shared_ptr&lt;user_t&gt; user) {
+                    cout << name << " " << user->status() << endl;
+                });
+                start = std::chrono::system_clock::now();
+            }
         }
 
         for (auto&amp; t: threads) {
             t.join();
         }
 
-        // single threaded processing:
+        // single threaded processing
         auto unsafe_users = users.make_unordered_map_view();
         count_statistics(unsafe_users);
         dump_to_file(unsafe_users);
