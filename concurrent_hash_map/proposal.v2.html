@@ -98,7 +98,7 @@
     </style>
 </head>
 <body bgcolor="#ffffff">
-<address>Document number: D0652R1</address>
+<address>Document number: D0652R2</address>
 <address>Project: Programming Language C++</address>
 <address>Audience: SG1 Concurrency</address>
 <address>&nbsp;</address>
@@ -111,8 +111,9 @@
         href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;
 </address>
 <address>&nbsp;</address>
-<address>Date: 2018-10-01</address>
+<address>Date: 2019-01-15</address>
 <h1>Concurrent associative data structure with unsynchronized view</h1>
+<p class='changed-added'>Significant changes since <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0652r1.html">P0652R2</a> are marked with blue.<p>
 
 <h2>I. Introduction and Motivation</h2>
 <p>There's a lot of use-cases where a concurrent modification of
@@ -237,17 +238,17 @@
 <pre>namespace std {
   template &lt;class Key,
             class T,
-            class Hasher = hash&lt;Key&gt;,
-            class Equality = equal_to&lt;Key&gt;,
+            class Hash = hash&lt;Key&gt;,
+            class Pred = equal_to&lt;Key&gt;,
             class Allocator = allocator&lt;pair&lt;const Key, T&gt;&gt; &gt;
   class concurrent_unordered_map;
 
   template &lt;class Key,
             class T,
-            class Hasher = hash&lt;Key&gt;,
-            class Equality = equal_to&lt;Key&gt;,
+            class Hash = hash&lt;Key&gt;,
+            class Pred = equal_to&lt;Key&gt;,
             class Allocator = allocator&lt;pair&lt;const Key, T&gt;&gt; &gt;
-  void swap(concurrent_unordered_map&lt; Key, T, Hasher, Equality, Allocator&gt;&amp; lhs,concurrent_unordered_map&lt; Key, T, Hasher, Equality, Allocator&gt;&amp; rhs);
+  void swap(concurrent_unordered_map&lt; Key, T, Hash, Pred, Allocator&gt;&amp; lhs,concurrent_unordered_map&lt; Key, T, Hash, Pred, Allocator&gt;&amp; rhs);
 }
 </pre>
 
@@ -255,8 +256,8 @@
 <pre>namespace std {
   template &lt;class Key,
             class T,
-            class Hasher = hash&lt;Key&gt;,
-            class Equality = equal_to&lt;Key&gt;,
+            class Hash = hash&lt;Key&gt;,
+            class Pred = equal_to&lt;Key&gt;,
             class Allocator = allocator&lt;pair&lt;const Key, T&gt;&gt; &gt;
   class concurrent_unordered_map {
   public:
@@ -264,8 +265,8 @@
     using key_type          = Key;
     using mapped_type       = T;
     using value_type        = pair&lt;const Key, T&gt;;
-    using hasher            = Hasher;
-    using key_equal         = Equality;
+    using hasher            = Hash;
+    using key_equal         = Pred;
     using allocator_type    = Allocator;
     using size_type         = implementation-defined;
 
@@ -274,7 +275,7 @@
     // construct/copy/assign/destroy
     concurrent_unordered_map();
     explicit concurrent_unordered_map(size_type n);
-    concurrent_unordered_map(size_type n, const Hasher&amp; hf,
+    concurrent_unordered_map(size_type n, const Hash&amp; hf,
                                       const key_equal&amp; eql = key_equal(),
                                       const allocator_type&amp; a = allocator_type());
     template &lt;typename InputIterator&gt;
@@ -343,7 +344,7 @@
 
     void swap(concurrent_unordered_map&amp;)
         noexcept(allocator_traits&lt;Allocator&gt;::is_always_equal::value &amp;&amp;
-            is_nothrow_swappable_v&lt;Hasher&gt; &amp;&amp;
+            is_nothrow_swappable_v&lt;Hash&gt; &amp;&amp;
             is_nothrow_swappable_v&lt;Pred&gt;);
     void clear() noexcept;
 
@@ -362,18 +363,18 @@
 <p><code>mapped_type</code> shall satisfy <i>Cpp17MoveConstructible</i> requirements.</p>
 
 <p>Unless specified otherwise all the member functions of <code>concurrent_unordered_map</code> have the following additional requirements, and remarks:
-<div class="desc"><i>Requires:</i> Concurrent member function invocations for the same instance of <code>Hasher</code>, <code>Equality</code>, and <code>Allocator</code> do not introduce data races. Concurrent invocations for different instances of <code>Key</code> and <code>T</code> do not introduce data races for the following functions: all the constructors (including default, move and copy constructors); copy and move assignments; destructor.</div>
+<div class="desc"><i>Requires:</i> Concurrent member function invocations for the same instance of <code>Hash</code>, <code>Pred</code>, and <code>Allocator</code> do not introduce data races. Concurrent invocations for different instances of <code>Key</code> and <code>T</code> do not introduce data races for the following functions: all the constructors (including default, move and copy constructors); copy and move assignments; destructor.</div>
 
 <div class="desc"><i>Remarks:</i> Call to member function do not introduce data races with other calls to the same or different member functions for the same or different instances of <code>concurrent_unordered_map</code>.</div>
 
 <p>Calls to functions that successfully modify keys or values synchronize with calls to functions successfully reading the value or key of the same keys.</p>
-<p>Destructor call for the <code>unordered_map_view</code> referencing the instance of <code>concurrent_unordered_map</code> synchronize with calls to functions successfully reading the value or key of the <code>concurrent_unordered_map</code>.</p>
+<p>Destructor call for the <code>unordered_map_view</code> referencing the instance of <code>concurrent_unordered_map</code> synchronize with calls to functions successfully reading the value or key of the <span class="changed-added">same instance of </span> <code>concurrent_unordered_map</code>.</p>
 
 
 <h3>???.2.1 concurrent_unordered_map construct/copy/assign/destroy</h3>
 <pre>concurrent_unordered_map();
 explicit concurrent_unordered_map(size_type n);
-concurrent_unordered_map(size_type n, const Hasher&amp; hf,
+concurrent_unordered_map(size_type n, const Hash&amp; hf,
                                   const key_equal&amp; eql = key_equal(),
                                   const allocator_type&amp; a = allocator_type());
 template &lt;typename InputIterator&gt;
@@ -417,8 +418,8 @@ concurrent_unordered_map&amp; operator=(concurrent_unordered_map&amp;&amp; other
 <pre>allocator_type get_allocator() const;
 hasher hash_function() const;
 key_equal key_eq() const;</pre>
+<div class="desc changed-added"><i>Expects:</i> Copy construction of <code>allocator_type</code>, <code>hasher</code> and <code>key_equal</code> should not introduce data races.</div>
 <div class="desc"><i>Returns:</i> Copies of <code>allocator_type</code>, <code>hasher</code> and <code>key_equal</code> respectively.</div>
-
 
 <h3>???.2.3 concurrent_unordered_map visitation</h3>
 <pre>template &lt;typename Visitor&gt;
@@ -436,16 +437,16 @@ void visit(const key_type&amp; key, Visitor&amp; f) const;</pre>
 <pre>template &lt;typename Visitor&gt;
 void visit_all(Visitor&amp; f);</pre>
 <div class="desc"><i>Constraints:</i> <code>is_invocable_v&lt;Visitor, const key_type&amp;, mapped_type&amp;&gt;</code> </div>
-<div class="desc"><i>Effects:</i> Sequentially invokes <code>f</code> on each key and value pair stored in <code>*this</code>.</div>
-<div class="desc"><i>Remarks:</i> Reads or modifications of non-const arguments passed into <code>f</code> do not introduce data races. <i>[Note:</i> Invocation of <code>f</code> on some
-    key and value does not prevent modifications of other keys and values in <code>*this</code> <i>- end note]</i>.</div>
+<div class="desc"><i>Effects:</i> Sequentially invokes <code>f</code> on key and value pairs stored in <code>*this</code>.</div>
+<div class="desc"><i>Remarks:</i> Reads or modifications of non-const arguments passed into <code>f</code> do not introduce data races. <span class="changed-added">It is guaranteed to visit all the keys of <code>*this</code> only if there is no concurrent modifications of <code>*this</code>.</span> <i>[Note:</i> Invocation of <code>f</code> on some
+    key and value does not prevent modifications of other keys and values in <code>*this</code>. <i>- end note]</i>.</div>
 
 <pre>template &lt;typename Visitor&gt;
 void visit_all(Visitor&amp; f) const;</pre>
 <div class="desc"><i>Constraints:</i> <code>is_invocable_v&lt;Visitor, const key_type&amp;, const mapped_type&amp;&gt;</code> </div>
-<div class="desc"><i>Effects:</i> Sequentially invokes <code>f</code> on each key and value pair stored in <code>*this</code>.</div>
-<div class="desc"><i>Remarks:</i> Reads of the arguments passed into <code>f</code> do not introduce data races. <i>[Note:</i> Invocation of <code>f</code> on some
-    key and value does not prevent modifications of other keys and values in <code>*this</code> <i>- end note]</i>.</div>
+<div class="desc"><i>Effects:</i> Sequentially invokes <code>f</code> on key and value pairs stored in <code>*this</code>.</div>
+<div class="desc"><i>Remarks:</i> Reads of the arguments passed into <code>f</code> do not introduce data races. <span class="changed-added">It is guaranteed to visit all the keys of <code>*this</code> only if there is no concurrent modifications of <code>*this</code>.</span> <i>[Note:</i> Invocation of <code>f</code> on some
+    key and value does not prevent modifications of other keys and values in <code>*this</code>. <i>- end note]</i>.</div>
 
 <pre>template&lt;typename K, typename Visitor, typename... Args&gt;
 bool visit_or_emplace(K&amp;&amp; key, Visitor&amp; f, Args&amp;&amp;... args);</pre>
@@ -497,7 +498,7 @@ void merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; s
 
 <pre>void swap(concurrent_unordered_map&amp; other)
         noexcept(allocator_traits&lt;Allocator&gt;::is_always_equal::value &amp;&amp;
-            is_nothrow_swappable_v&lt;Hasher&gt; &amp;&amp;
+            is_nothrow_swappable_v&lt;Hash&gt; &amp;&amp;
             is_nothrow_swappable_v&lt;Pred&gt;);</pre>
 <div class="desc"><i>Effects:</i> Swaps the content of <code>other</code> into <code>*this</code>.
         <i>[Note:</i> If new values are being concurrently inserted into <code>other</code> or <code>*this</code> during this operation
@@ -513,21 +514,22 @@ void merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; s
 
 <h3>???.2.6 concurrent_unordered_map view retrieval</h3>
 <pre>unordered_map_view make_unordered_map_view(bool lock = false) const noexcept;</pre>
-<div class="desc"><i>Effects:</i> Creates a view of the container contents. If the argument is <code>true</code> any concurrent access to <code>*this</code> should block as long as the view is not destroyed.</div>
+<div class="desc"><i>Effects:</i> Creates a view of the container contents. If the argument is <code>true</code> any concurrent access to <code>*this</code> <span class="changed-added">through member functions or any subsequent attempt to invoke <code>this-&gt;make_unordered_map_view(true)</code></span> should block as long as the view is not destroyed.</div>
+<div class="desc changed-added"><i>Synchronization:</i> Synchronizes with previous modifications of <code>*this</code>.</div>
 
 <h3>???.3 Class <code>unordered_map_view</code></h3>
 
-<pre>  template &lt;class Key, class T, class Hasher, class Equality, class Allocator&gt;
-    class  concurrent_unordered_map&lt;Key, T, Hasher, Equality, Allocator&gt;::unordered_map_view {
-    concurrent_unordered_map&lt;Key, T, Hasher, Equality, Allocator&gt;&amp; delegate; // exposition only
+<pre>  template &lt;class Key, class T, class Hash, class Pred, class Allocator&gt;
+    class  concurrent_unordered_map&lt;Key, T, Hash, Pred, Allocator&gt;::unordered_map_view {
+    concurrent_unordered_map&lt;Key, T, Hash, Pred, Allocator&gt;&amp; delegate; // exposition only
 
   public:
     // types:
     using key_type          = Key;
     using mapped_type       = T;
     using value_type        = pair&lt;const Key, T&gt;;
-    using hasher            = Hasher;
-    using key_equal         = Equality;
+    using hasher            = Hash;
+    using key_equal         = Pred;
     using allocator_type    = Allocator;
 
     using pointer           = typename allocator_traits&lt;Allocator&gt;::pointer;
@@ -586,7 +588,7 @@ void merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; s
     iterator erase(const_iterator first, const_iterator last);
     void swap(concurrent_unordered_map&amp;)
         noexcept(allocator_traits&lt;Allocator&gt;::is_always_equal::value &amp;&amp;
-            is_nothrow_swappable_v&lt;Hasher&gt; &amp;&amp;
+            is_nothrow_swappable_v&lt;Hash&gt; &amp;&amp;
             is_nothrow_swappable_v&lt;Pred&gt;);
     void clear() noexcept;
 
@@ -632,8 +634,8 @@ void merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp;&amp; s
 }
 </pre>
 <p><code>unordered_map_view</code> class refers <code>concurrent_unordered_map</code>
-    and provides an interface to <code>concurrent_unordered_map</code> that satisfies unordered associative container requirements
-    (except iterator invalidation requirements, <code>load_factor</code> functions, <code>size()</code> complexity requirements and node operations).</p>
+    and provides an interface to <code>concurrent_unordered_map</code> that satisfies unordered associative container requirements <span class="changed-added">[unord.req]</span>
+    except iterator invalidation requirements, <code>load_factor</code> functions, <code>size()</code> complexity requirements, <span class="changed-added">buckets</span> and node operations.</p>
 
 <p>[ <i>Note:</i> Concurrent const member functions calls on the instances of <code>unordered_map_view</code> referencing
     the same <code>concurrent_unordered_map</code> introduce data races <i>- end note. </i>] </p>
