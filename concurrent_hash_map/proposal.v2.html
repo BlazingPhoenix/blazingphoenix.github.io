@@ -117,7 +117,12 @@
 
 <h2>I. Introduction and Motivation</h2>
 <p>There's a lot of use-cases where a concurrent modification of
-    unordered associative container is required. There were attempts to add
+        unordered associative container is required. For example, there is a popular web service named <a href="http://memcached.org/">Memcached</a> which simply caches objects in memory.
+    Also, we can use it to collect <a href="https://github.com/facebook/hhvm/blob/master/hphp/hhbbc/stats.cpp#L107">statistics</a>,
+    to store connection <a href="https://github.com/apache/activemq-cpp/blob/master/activemq-cpp/src/main/activemq/state/ConnectionState.h#L53">metadata</a> or
+    just use as lightweight key-value <a href="https://github.com/SoftwareNetwork/sw/blob/master/src/builder/file_storage.h#L72">storage</a>.
+    Some big companies like Facebook have it in their standard <a href="https://github.com/facebook/folly/blob/master/folly/concurrency/ConcurrentHashMap.h">library</a>.
+    There were attempts to add
     such containers/data structures in the past (<a
             href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3425.html">N3425</a>, <a
             href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3732.pdf">N3732</a>, and others...)</p>
