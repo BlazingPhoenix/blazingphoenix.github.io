@@ -831,7 +831,6 @@ github. It has also an implementation of concurrent hash map.
 <br>
 </span>
 The test was very simple:<br>
-* All maps have <span class="changed-added">int</span> keys and int values.<br>
 * <span class="changed-added">We created an appropriate number of threads that tries on each
 iteration to find some random key in the map and probably insert
 another random value by the key to the container
@@ -839,7 +838,913 @@ according. Probability of insert operation is called write fraction below.<br></
 * Each thread had 1000000 of iterations.<br>
 * We use a computer with 56 virtual cores & 256GB of memory for the tests.<br>
 
-<h3 align="center">Concurrent unordered map benchmark</h3>
+<h3 align="center">Concurrent unordered map benchmark for complex types
+  (std::string keys & values)</h3>
+<table class="gridtable">
+  <tr>
+    <th>Write fraction</th>
+    <th>Thread count</th>
+    <th>boost::synchronized_value&lt;std::unordered_map&gt;, ms</th>
+    <th>std::concurrent_unordered_map prototype, ms</th>
+    <th>Sharded unordered map, ms</th>
+    <th>libcuckoo cuckoohash_map, ms</th>
+    <th>folly::ConcurrentHashMap, ms</th>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>1</td>
+    <td>760</td>
+    <td>870</td>
+    <td>783</td>
+    <td>790</td>
+    <td>1020</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>2</td>
+    <td>3173</td>
+    <td>1033</td>
+    <td>2671</td>
+    <td>1159</td>
+    <td>1338</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>4</td>
+    <td>7161</td>
+    <td>1607</td>
+    <td>2880</td>
+    <td>1392</td>
+    <td>1580</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>8</td>
+    <td>17865</td>
+    <td>2251</td>
+    <td>5305</td>
+    <td>1906</td>
+    <td>2780</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>16</td>
+    <td>39640</td>
+    <td>3828</td>
+    <td>7752</td>
+    <td>2765</td>
+    <td>6031</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>32</td>
+    <td>97090</td>
+    <td>7137</td>
+    <td>12834</td>
+    <td>4968</td>
+    <td>12886</td>
+  </tr>
+  <tr>
+    <td>1/1</td>
+    <td>64</td>
+    <td>202159</td>
+    <td>13709</td>
+    <td>19502</td>
+    <td>14386</td>
+    <td>24094</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>1</td>
+    <td>519</td>
+    <td>512</td>
+    <td>551</td>
+    <td>473</td>
+    <td>716</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>2</td>
+    <td>1545</td>
+    <td>549</td>
+    <td>1074</td>
+    <td>541</td>
+    <td>656</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>4</td>
+    <td>3943</td>
+    <td>620</td>
+    <td>1505</td>
+    <td>560</td>
+    <td>950</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>8</td>
+    <td>10795</td>
+    <td>880</td>
+    <td>2752</td>
+    <td>721</td>
+    <td>1063</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>16</td>
+    <td>21808</td>
+    <td>1267</td>
+    <td>4060</td>
+    <td>1013</td>
+    <td>1231</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>32</td>
+    <td>51410</td>
+    <td>2205</td>
+    <td>6635</td>
+    <td>1706</td>
+    <td>2783</td>
+  </tr>
+  <tr>
+    <td>1/5</td>
+    <td>64</td>
+    <td>110850</td>
+    <td>5567</td>
+    <td>11160</td>
+    <td>6399</td>
+    <td>6284</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>1</td>
+    <td>450</td>
+    <td>501</td>
+    <td>446</td>
+    <td>474</td>
+    <td>430</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>2</td>
+    <td>983</td>
+    <td>566</td>
+    <td>609</td>
+    <td>475</td>
+    <td>465</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>4</td>
+    <td>1933</td>
+    <td>514</td>
+    <td>1059</td>
+    <td>484</td>
+    <td>486</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>8</td>
+    <td>4520</td>
+    <td>536</td>
+    <td>1205</td>
+    <td>557</td>
+    <td>552</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>16</td>
+    <td>14564</td>
+    <td>661</td>
+    <td>1569</td>
+    <td>617</td>
+    <td>714</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>32</td>
+    <td>37203</td>
+    <td>1068</td>
+    <td>2481</td>
+    <td>1019</td>
+    <td>898</td>
+  </tr>
+  <tr>
+    <td>1/20</td>
+    <td>64</td>
+    <td>86198</td>
+    <td>2648</td>
+    <td>3840</td>
+    <td>4303</td>
+    <td>2484</td>
+  </tr>
+</table>
+<br>
+<br>
+<script type="text/javascript" src="amcharts.js"></script>
+<script type="text/javascript" src="serial.js"></script>
+<script type="text/javascript">
+    AmCharts.makeChart("chartstr1",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "760",
+                    "column-2": "870",
+                    "column-3": "783",
+                    "column-4": "790",
+                    "column-5": "1020",
+                    "category": "1"
+                },
+                {
+                    "column-1": "3173",
+                    "column-2": "1033",
+                    "column-3": "2671",
+                    "column-4": "1159",
+                    "column-5": "1338",
+                    "category": "2"
+                },
+                {
+                    "column-1": "7161",
+                    "column-2": "1607",
+                    "column-3": "2880",
+                    "column-4": "1392",
+                    "column-5": "1580",
+                    "category": "4"
+                },
+                {
+                    "column-1": "17865",
+                    "column-2": "2251",
+                    "column-3": "5305",
+                    "column-4": "1906",
+                    "column-5": "2780",
+                    "category": "8"
+                },
+                {
+                    "column-1": "39640",
+                    "column-2": "3828",
+                    "column-3": "7252",
+                    "column-4": "2765",
+                    "column-5": "6031",
+                    "category": "16"
+                },
+                    {
+                    "column-1": "97090",
+                    "column-2": "7137",
+                    "column-3": "12834",
+                    "column-4": "4968",
+                    "column-5": "12886",
+                    "category": "32"
+                },
+                {
+                    "column-1": "202159",
+                    "column-2": "13709",
+                    "column-3": "19502",
+                    "column-4": "14386",
+                    "column-5": "24094",
+                    "category": "64"
+                }
+            ]
+        }
+    );
+</script>
+<br/>
+<script type="text/javascript">
+    AmCharts.makeChart("chartstr5",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "519",
+                    "column-2": "512",
+                    "column-3": "551",
+                    "column-4": "473",
+                    "column-5": "716",
+                    "category": "1"
+                },
+                {
+                    "column-1": "1545",
+                    "column-2": "459",
+                    "column-3": "1074",
+                    "column-4": "541",
+                    "column-5": "656",
+                    "category": "2"
+                },
+                {
+                    "column-1": "3943",
+                    "column-2": "620",
+                    "column-3": "1505",
+                    "column-4": "560",
+                    "column-5": "950",
+                    "category": "4"
+                },
+                {
+                    "column-1": "10795",
+                    "column-2": "880",
+                    "column-3": "2752",
+                    "column-4": "721",
+                    "column-5": "1063",
+                    "category": "8"
+                },
+                {
+                    "column-1": "21808",
+                    "column-2": "1267",
+                    "column-3": "4060",
+                    "column-4": "1013",
+                    "column-5": "1231",
+                    "category": "16"
+                },
+                {
+                    "column-1": "51410",
+                    "column-2": "2205",
+                    "column-3": "6635",
+                    "column-4": "1706",
+                    "column-5": "2783",
+                    "category": "32"
+                },
+                {
+                    "column-1": "110850",
+                    "column-2": "5567",
+                    "column-3": "11160",
+                    "column-4": "6399",
+                    "column-5": "6284",
+                    "category": "64"
+                }
+            ]
+        }
+    );
+</script>
+<script type="text/javascript">
+    AmCharts.makeChart("chartstr20",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "450",
+                    "column-2": "501",
+                    "column-3": "446",
+                    "column-4": "474",
+                    "column-5": "430",
+                    "category": "1"
+                },
+                {
+                    "column-1": "983",
+                    "column-2": "566",
+                    "column-3": "609",
+                    "column-4": "475",
+                    "column-5": "465",
+                    "category": "2"
+                },
+                {
+                    "column-1": "1933",
+                    "column-2": "514",
+                    "column-3": "1059",
+                    "column-4": "484",
+                    "column-5": "486",
+                    "category": "4"
+                },
+                {
+                    "column-1": "4520",
+                    "column-2": "536",
+                    "column-3": "1205",
+                    "column-4": "557",
+                    "column-5": "552",
+                    "category": "8"
+                },
+                {
+                    "column-1": "14564",
+                    "column-2": "661",
+                    "column-3": "1569",
+                    "column-4": "617",
+                    "column-5": "714",
+                    "category": "16"
+                },
+                {
+                    "column-1": "37203",
+                    "column-2": "1068",
+                    "column-3": "2481",
+                    "column-4": "1019",
+                    "column-5": "898",
+                    "category": "32"
+                },
+                {
+                    "column-1": "86198",
+                    "column-2": "2648",
+                    "column-3": "3840",
+                    "column-4": "4303",
+                    "column-5": "2484",
+                    "category": "64"
+                }
+
+            ]
+        }
+    );
+</script>
+<script type="text/javascript">
+    AmCharts.makeChart("chartint1",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "358",
+                    "column-2": "324",
+                    "column-3": "413",
+                    "column-4": "332",
+                    "column-5": "373",
+                    "category": "1"
+                },
+                {
+                    "column-1": "2034",
+                    "column-2": "563",
+                    "column-3": "1347",
+                    "column-4": "444",
+                    "column-5": "724",
+                    "category": "2"
+                },
+                {
+                    "column-1": "4236",
+                    "column-2": "678",
+                    "column-3": "2047",
+                    "column-4": "619",
+                    "column-5": "1412",
+                    "category": "4"
+                },
+                {
+                    "column-1": "15234",
+                    "column-2": "872",
+                    "column-3": "3382",
+                    "column-4": "703",
+                    "column-5": "2760",
+                    "category": "8"
+                },
+                {
+                    "column-1": "32094",
+                    "column-2": "1248",
+                    "column-3": "5593",
+                    "column-4": "1370",
+                    "column-5": "5889",
+                    "category": "16"
+                },
+                {
+                    "column-1": "73701",
+                    "column-2": "2123",
+                    "column-3": "8669",
+                    "column-4": "1585",
+                    "column-5": "13838",
+                    "category": "32"
+                },
+                {
+                    "column-1": "165842",
+                    "column-2": "5624",
+                    "column-3": "12076",
+                    "column-4": "7264",
+                    "column-5": "26686",
+                    "category": "64"
+                }
+            ]
+        }
+    );
+</script>
+<br/>
+<script type="text/javascript">
+    AmCharts.makeChart("chartint5",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "272",
+                    "column-2": "135",
+                    "column-3": "247",
+                    "column-4": "167",
+                    "column-5": "242",
+                    "category": "1"
+                },
+                {
+                    "column-1": "886",
+                    "column-2": "161",
+                    "column-3": "580",
+                    "column-4": "194",
+                    "column-5": "325",
+                    "category": "2"
+                },
+                {
+                    "column-1": "2173",
+                    "column-2": "235",
+                    "column-3": "867",
+                    "column-4": "309",
+                    "column-5": "557",
+                    "category": "4"
+                },
+                {
+                    "column-1": "8495",
+                    "column-2": "242",
+                    "column-3": "1278",
+                    "column-4": "286",
+                    "column-5": "754",
+                    "category": "8"
+                },
+                {
+                    "column-1": "17337",
+                    "column-2": "491",
+                    "column-3": "2495",
+                    "column-4": "464",
+                    "column-5": "1494",
+                    "category": "16"
+                },
+                {
+                    "column-1": "38755",
+                    "column-2": "565",
+                    "column-3": "3645",
+                    "column-4": "605",
+                    "column-5": "3085",
+                    "category": "32"
+                },
+                {
+                    "column-1": "83737",
+                    "column-2": "1652",
+                    "column-3": "4859",
+                    "column-4": "3356",
+                    "column-5": "6097",
+                    "category": "64"
+                }
+            ]
+        }
+    );
+</script>
+<script type="text/javascript">
+    AmCharts.makeChart("chartint20",
+        {
+            "type": "serial",
+            "categoryField": "category",
+            "sequencedAnimation": false,
+            "theme": "default",
+            "categoryAxis": {
+                "gridPosition": "start",
+         		"title": "Thread count"
+            },
+            "trendLines": [],
+            "graphs": [
+                {
+                    "bullet": "round",
+                    "id": "AmGraph-2",
+                    "tabIndex": 6,
+                    "title": "std::concurrent_unordered_map prototype",
+                    "valueField": "column-2"
+                },
+                {
+                    "id": "AmGraph-3",
+                    "bullet": "round",
+                    "title": "Sharded unordered map",
+                    "valueField": "column-3"
+                },
+                {
+                    "id": "AmGraph-4",
+                    "bullet": "round",
+                    "title": "libcuckoo cuckoohash_map",
+                    "valueField": "column-4"   
+                },
+                {
+                    "id": "AmGraph-5",
+                    "bullet": "round",
+                    "title": "folly::ConcurrentHashMap",
+                    "valueField": "column-5"
+                }
+            ],
+            "guides": [],
+     	    "valueAxes": [
+                {
+                    "id": "ValueAxis-1",
+                    "title": "Time, milliseconds"
+                }
+            ],
+            "allLabels": [],
+            "balloon": {},
+            "legend": {
+                "enabled": true,
+                "useGraphSettings": true
+            },
+            "titles": [],
+            "dataProvider": [
+                {
+                    "column-1": "214",
+                    "column-2": "135",
+                    "column-3": "214",
+                    "column-4": "185",
+                    "column-5": "205",
+                    "category": "1"
+                },
+                {
+                    "column-1": "705",
+                    "column-2": "153",
+                    "column-3": "411",
+                    "column-4": "186",
+                    "column-5": "222",
+                    "category": "2"
+                },
+                {
+                    "column-1": "1447",
+                    "column-2": "151",
+                    "column-3": "575",
+                    "column-4": "190",
+                    "column-5": "238",
+                    "category": "4"
+                },
+                {
+                    "column-1": "5503",
+                    "column-2": "165",
+                    "column-3": "768",
+                    "column-4": "222",
+                    "column-5": "302",
+                    "category": "8"
+                },
+                {
+                    "column-1": "11700",
+                    "column-2": "200",
+                    "column-3": "1359",
+                    "column-4": "325",
+                    "column-5": "492",
+                    "category": "16"
+                },
+                {
+                    "column-1": "29675",
+                    "column-2": "285",
+                    "column-3": "1936",
+                    "column-4": "422",
+                    "column-5": "928",
+                    "category": "32"
+                },
+                {
+                    "column-1": "65571",
+                    "column-2": "750",
+                    "column-3": "3073",
+                    "column-4": "2889",
+                    "column-5": "1851",
+                    "category": "64"
+                }
+            ]
+        }
+    );
+</script>
+<h4 align="center">Write fraction 1/1</h3>
+<div id="chartstr1" style="width: 100%; height: 400px;
+                          background-color: #FFFFFF;" ></div>
+<br/>
+<h4 align="center">Write fraction 1/5</h3>
+<div id="chartstr5" style="width: 100%; height: 400px;
+                           background-color: #FFFFFF;" ></div>
+<br/>
+<h4 align="center">Write fraction 1/20</h3>
+<div id="chartstr20" style="width: 100%; height: 400px;
+                            background-color: #FFFFFF;"></div>
+<br/>
+<h3 align="center">Concurrent unordered map benchmark for pod types
+  (unsigned int keys & values)</h3>
 <table class="gridtable">
   <tr>
     <th>Write fraction</th>
@@ -1042,368 +1947,24 @@ according. Probability of insert operation is called write fraction below.<br></
 </table>
 <br>
 <br>
-<script type="text/javascript" src="amcharts.js"></script>
-<script type="text/javascript" src="serial.js"></script>
-<script type="text/javascript">
-    AmCharts.makeChart("chartdiv1",
-        {
-            "type": "serial",
-            "categoryField": "category",
-            "sequencedAnimation": false,
-            "theme": "default",
-            "categoryAxis": {
-                "gridPosition": "start",
-         		"title": "Thread count"
-            },
-            "trendLines": [],
-            "graphs": [
-                {
-                    "bullet": "round",
-                    "id": "AmGraph-2",
-                    "tabIndex": 6,
-                    "title": "std::concurrent_unordered_map prototype",
-                    "valueField": "column-2"
-                },
-                {
-                    "id": "AmGraph-3",
-                    "bullet": "round",
-                    "title": "Sharded unordered map",
-                    "valueField": "column-3"
-                },
-                {
-                    "id": "AmGraph-4",
-                    "bullet": "round",
-                    "title": "libcuckoo cuckoohash_map",
-                    "valueField": "column-4"   
-                },
-                {
-                    "id": "AmGraph-5",
-                    "bullet": "round",
-                    "title": "folly::ConcurrentHashMap",
-                    "valueField": "column-5"
-                }
-            ],
-            "guides": [],
-     	    "valueAxes": [
-                {
-                    "id": "ValueAxis-1",
-                    "title": "Time, milliseconds"
-                }
-            ],
-            "allLabels": [],
-            "balloon": {},
-            "legend": {
-                "enabled": true,
-                "useGraphSettings": true
-            },
-            "titles": [],
-            "dataProvider": [
-                {
-                    "column-1": "358",
-                    "column-2": "324",
-                    "column-3": "413",
-                    "column-4": "332",
-                    "column-5": "373",
-                    "category": "1"
-                },
-                {
-                    "column-1": "2034",
-                    "column-2": "563",
-                    "column-3": "1347",
-                    "column-4": "444",
-                    "column-5": "724",
-                    "category": "2"
-                },
-                {
-                    "column-1": "4236",
-                    "column-2": "678",
-                    "column-3": "2047",
-                    "column-4": "619",
-                    "column-5": "1412",
-                    "category": "4"
-                },
-                {
-                    "column-1": "15234",
-                    "column-2": "872",
-                    "column-3": "3382",
-                    "column-4": "703",
-                    "column-5": "2760",
-                    "category": "8"
-                },
-                {
-                    "column-1": "32094",
-                    "column-2": "1248",
-                    "column-3": "5593",
-                    "column-4": "1370",
-                    "column-5": "5889",
-                    "category": "16"
-                },
-                {
-                    "column-1": "73701",
-                    "column-2": "2123",
-                    "column-3": "8669",
-                    "column-4": "1585",
-                    "column-5": "13838",
-                    "category": "32"
-                },
-                {
-                    "column-1": "165842",
-                    "column-2": "5624",
-                    "column-3": "12076",
-                    "column-4": "7264",
-                    "column-5": "26686",
-                    "category": "64"
-                }
-            ]
-        }
-    );
-</script>
-<br/>
-<script type="text/javascript">
-    AmCharts.makeChart("chartdiv5",
-        {
-            "type": "serial",
-            "categoryField": "category",
-            "sequencedAnimation": false,
-            "theme": "default",
-            "categoryAxis": {
-                "gridPosition": "start",
-         		"title": "Thread count"
-            },
-            "trendLines": [],
-            "graphs": [
-                {
-                    "bullet": "round",
-                    "id": "AmGraph-2",
-                    "tabIndex": 6,
-                    "title": "std::concurrent_unordered_map prototype",
-                    "valueField": "column-2"
-                },
-                {
-                    "id": "AmGraph-3",
-                    "bullet": "round",
-                    "title": "Sharded unordered map",
-                    "valueField": "column-3"
-                },
-                {
-                    "id": "AmGraph-4",
-                    "bullet": "round",
-                    "title": "libcuckoo cuckoohash_map",
-                    "valueField": "column-4"   
-                },
-                {
-                    "id": "AmGraph-5",
-                    "bullet": "round",
-                    "title": "folly::ConcurrentHashMap",
-                    "valueField": "column-5"
-                }
-            ],
-            "guides": [],
-     	    "valueAxes": [
-                {
-                    "id": "ValueAxis-1",
-                    "title": "Time, milliseconds"
-                }
-            ],
-            "allLabels": [],
-            "balloon": {},
-            "legend": {
-                "enabled": true,
-                "useGraphSettings": true
-            },
-            "titles": [],
-            "dataProvider": [
-                {
-                    "column-1": "272",
-                    "column-2": "135",
-                    "column-3": "247",
-                    "column-4": "167",
-                    "column-5": "242",
-                    "category": "1"
-                },
-                {
-                    "column-1": "886",
-                    "column-2": "161",
-                    "column-3": "580",
-                    "column-4": "194",
-                    "column-5": "325",
-                    "category": "2"
-                },
-                {
-                    "column-1": "2173",
-                    "column-2": "235",
-                    "column-3": "867",
-                    "column-4": "309",
-                    "column-5": "557",
-                    "category": "4"
-                },
-                {
-                    "column-1": "8495",
-                    "column-2": "242",
-                    "column-3": "1278",
-                    "column-4": "286",
-                    "column-5": "754",
-                    "category": "8"
-                },
-                {
-                    "column-1": "17337",
-                    "column-2": "491",
-                    "column-3": "2495",
-                    "column-4": "464",
-                    "column-5": "1494",
-                    "category": "16"
-                },
-                {
-                    "column-1": "38755",
-                    "column-2": "565",
-                    "column-3": "3645",
-                    "column-4": "605",
-                    "column-5": "3085",
-                    "category": "32"
-                },
-                {
-                    "column-1": "83737",
-                    "column-2": "1652",
-                    "column-3": "4859",
-                    "column-4": "3356",
-                    "column-5": "6097",
-                    "category": "64"
-                }
-            ]
-        }
-    );
-</script>
-<script type="text/javascript">
-    AmCharts.makeChart("chartdiv20",
-        {
-            "type": "serial",
-            "categoryField": "category",
-            "sequencedAnimation": false,
-            "theme": "default",
-            "categoryAxis": {
-                "gridPosition": "start",
-         		"title": "Thread count"
-            },
-            "trendLines": [],
-            "graphs": [
-                {
-                    "bullet": "round",
-                    "id": "AmGraph-2",
-                    "tabIndex": 6,
-                    "title": "std::concurrent_unordered_map prototype",
-                    "valueField": "column-2"
-                },
-                {
-                    "id": "AmGraph-3",
-                    "bullet": "round",
-                    "title": "Sharded unordered map",
-                    "valueField": "column-3"
-                },
-                {
-                    "id": "AmGraph-4",
-                    "bullet": "round",
-                    "title": "libcuckoo cuckoohash_map",
-                    "valueField": "column-4"   
-                },
-                {
-                    "id": "AmGraph-5",
-                    "bullet": "round",
-                    "title": "folly::ConcurrentHashMap",
-                    "valueField": "column-5"
-                }
-            ],
-            "guides": [],
-     	    "valueAxes": [
-                {
-                    "id": "ValueAxis-1",
-                    "title": "Time, milliseconds"
-                }
-            ],
-            "allLabels": [],
-            "balloon": {},
-            "legend": {
-                "enabled": true,
-                "useGraphSettings": true
-            },
-            "titles": [],
-            "dataProvider": [
-                {
-                    "column-1": "214",
-                    "column-2": "135",
-                    "column-3": "214",
-                    "column-4": "185",
-                    "column-5": "205",
-                    "category": "1"
-                },
-                {
-                    "column-1": "705",
-                    "column-2": "153",
-                    "column-3": "411",
-                    "column-4": "186",
-                    "column-5": "222",
-                    "category": "2"
-                },
-                {
-                    "column-1": "1447",
-                    "column-2": "151",
-                    "column-3": "575",
-                    "column-4": "190",
-                    "column-5": "238",
-                    "category": "4"
-                },
-                {
-                    "column-1": "5503",
-                    "column-2": "165",
-                    "column-3": "768",
-                    "column-4": "222",
-                    "column-5": "302",
-                    "category": "8"
-                },
-                {
-                    "column-1": "11700",
-                    "column-2": "200",
-                    "column-3": "1359",
-                    "column-4": "325",
-                    "column-5": "492",
-                    "category": "16"
-                },
-                {
-                    "column-1": "29675",
-                    "column-2": "285",
-                    "column-3": "1936",
-                    "column-4": "422",
-                    "column-5": "928",
-                    "category": "32"
-                },
-                {
-                    "column-1": "65571",
-                    "column-2": "750",
-                    "column-3": "3073",
-                    "column-4": "2889",
-                    "column-5": "1851",
-                    "category": "64"
-                }
-            ]
-        }
-    );
-</script>
 <h4 align="center">Write fraction 1/1</h3>
-<div id="chartdiv1" style="width: 100%; height: 400px;
+<div id="chartint1" style="width: 100%; height: 400px;
                           background-color: #FFFFFF;" ></div>
 <br/>
 <h4 align="center">Write fraction 1/5</h3>
-<div id="chartdiv5" style="width: 100%; height: 400px;
+<div id="chartint5" style="width: 100%; height: 400px;
                            background-color: #FFFFFF;" ></div>
 <br/>
 <h4 align="center">Write fraction 1/20</h3>
-<div id="chartdiv20" style="width: 100%; height: 400px;
+<div id="chartint20" style="width: 100%; height: 400px;
                             background-color: #FFFFFF;"></div>
 <br/>
+
 As we can see performance scales linearly when the number of threads
 is less than the number of cores. But when we exceed the number of cores, we observe
 significant work time growth.<span class="changed-added">We consider that the algorithm from the reference
-implementation is rather better than naive implementation and better than popular
-opensource implementations.</span>
+implementation is rather better than naive implementation and
+  comparable with popular opensource implementations performance.</span>
 
 <script type="text/javascript">
     function colorize_texts(texts) {
