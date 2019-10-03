@@ -15,14 +15,13 @@
         }
 
         .changed-deleted {
-            background-color: #CFF0FC;
+            background-color: #FF0000;
             text-decoration: line-through;
-            display: none;
         }
 
         .addition.changed-deleted {
             color: green;
-            background-color: #CFF0FC;
+            background-color: #FF0000;
             text-decoration: line-through;
             text-decoration: black double line-through;
             display: none;
@@ -111,7 +110,7 @@
 <address>&nbsp;</address>
 <address>Date: 2019-10-03</address>
 <h1>Concurrent associative data structure with unsynchronized view</h1>
-<p class="changed-added">Significant changes since <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0652r2.html">P0652R2</a> are marked with blue.</p><p>
+<p class="changed-added">Significant changes since <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0652r3.html">P0652R3</a> are marked with blue.</p><p>
 
 </p><h2>I. Introduction and Motivation</h2>
 <p>There's a lot of use-cases where a concurrent modification of
@@ -382,21 +381,21 @@ increase the size of the container if we use it to store small types,
 <p><code>mapped_type</code> satisfies <i>Cpp17MoveConstructible</i> requirements.</p>
 
 <p>Unless specified otherwise all the member functions of <code>concurrent_unordered_map</code> have the following additional requirements, and remarks:
-</p><div class="desc"><i>Requires:</i> Concurrent member function invocations for the same instance of <code>Hash</code>, <code>Pred</code>, and <code>Allocator</code> do not introduce data races <span class="changed-added"><i>[Note:</i> Safe to use same instance of <code>Hash</code>, <code>Pred</code>, or <code>Allocator</code> concurrently. <i>- end note]</i></span>.</div>
+</p><div class="desc"><i>Requires:</i> Concurrent member function invocations for the same instance of <code>Hash</code>, <code>Pred</code>, and <code>Allocator</code> do not introduce data races <i>[Note:</i> Safe to use same instance of <code>Hash</code>, <code>Pred</code>, or <code>Allocator</code> concurrently. <i>- end note]</i>.</div>
 <div class="desc">Concurrent invocations for different instances of <code>Key</code> and <code>T</code>
  do not introduce data races for the following functions: all the 
 constructors (including default, move and copy constructors); copy and 
-move assignments; destructor <span class="changed-added"><i>[Note:</i> Safe to concurrently use different instances of <code>Key</code>, or <code>T</code> for copying, moving, etc. <i>- end note]</i></span>.</div>
+move assignments; destructor <i>[Note:</i> Safe to concurrently use different instances of <code>Key</code>, or <code>T</code> for copying, moving, etc. <i>- end note]</i>.</div>
 
 <div class="desc"><i>Remarks:</i> Call to member function does not 
 introduce data races with other calls to the same or different member 
-functions for the same or different instances of <code>concurrent_unordered_map</code> <span class="changed-added"><i>[Note:</i> Is is safe to concurrently use the same instance of <code>concurrent_unordered_map</code><i>- end note]</i></span>.</div>
+functions for the same or different instances of <code>concurrent_unordered_map</code> <i>[Note:</i> Is is safe to concurrently use the same instance of <code>concurrent_unordered_map</code><i>- end note]</i>.</div>
 
 <p>Calls to functions of <code>concurrent_unordered_map</code> that 
 successfully modify keys or values synchronize with calls to functions 
-successfully reading the value or key of the same keys <span class="changed-added"><i>[Note:</i> Modifications of the key or value in one thread are visible to the thread that reads (or modifies) the same key or value. <i>- end note]</i></span></p>
-<p class="changed-added"><i>[Note:</i> Implementations are encouraged to implment concurrent reads of the same key or value without contention. <i>- end note]</i></p>
-<p>Destructor call for the <code>unordered_map_view</code> referencing the instance of <code>concurrent_unordered_map</code> synchronize with calls to functions successfully reading the value or key of the same instance of <code>concurrent_unordered_map</code> <span class="changed-added"><i>[Note:</i> Destructor of the <code>unordered_map_view</code> makes all the changes done through the instance of <code>unordered_map_view</code> visible to all the threads that use a <code>concurrent_unordered_map</code>.<i>- end note]</i></span>.</p>
+successfully reading the value or key of the same keys <i>[Note:</i> Modifications of the key or value in one thread are visible to the thread that reads (or modifies) the same key or value. <i>- end note]</i></p>
+<p><i>[Note:</i> Implementations are encouraged to implment concurrent reads of the same key or value without contention. <i>- end note]</i></p>
+<p>Destructor call for the <code>unordered_map_view</code> referencing the instance of <code>concurrent_unordered_map</code> synchronize with calls to functions successfully reading the value or key of the same instance of <code>concurrent_unordered_map</code> <i>[Note:</i> Destructor of the <code>unordered_map_view</code> makes all the changes done through the instance of <code>unordered_map_view</code> visible to all the threads that use a <code>concurrent_unordered_map</code>.<i>- end note]</i>.</p>
 
 
 <h3>???.2.1 concurrent_unordered_map construct/copy/assign/destroy</h3>
@@ -459,7 +458,8 @@ key_equal key_eq() const;</pre>
 <span class="cppkeyword">void</span> visit(<span class="cppkeyword">const </span>key_type&amp; key, Visitor&amp; f) const;</pre>
 <div class="desc"><i>Constraints:</i> <code>is_invocable_v&lt;Visitor, <span class="cppkeyword">const </span>mapped_type&amp;&gt;</code> </div>
 <div class="desc"><i>Effects:</i> Invokes <code>f</code> on the value stored with a key equivalent to the <code>key</code>.</div>
-<div class="desc"><i>Remarks:</i> We don't provide any protection for reading in this place. The user should make synchronization to avoid getting undefined behavior if the value type has no const modifier. Consistency guarantees were changed to allow multiple parallel readers on the same key without any lock.</div>
+<div class="desc"><i>Remarks:</i> Reads of the value passed
+  into <code>f</code> <span class="changed-deleted">do not introduce data races.</span><span class="changed-added">We don't provide any protection for reading in this place. The user should make synchronization to avoid getting undefined behavior if the value type has no const modifier. Consistency guarantees were changed to allow multiple parallel readers on the same key without any lock.</span></div>
 
 <pre><span class="cppkeyword">template</span> &lt;<span class="cppkeyword">typename</span> Visitor&gt;
 <span class="cppkeyword">void</span> visit_all(Visitor&amp; f);</pre>
@@ -506,7 +506,7 @@ size_type update(<span class="cppkeyword">const </span>key_type&amp; key, Args&a
 <pre>size_type erase(<span class="cppkeyword">const </span>key_type&amp; key);</pre>
 <div class="desc"><i>Returns:</i> <code>0</code> if
   the <code>key</code> was not in the container, <code>1</code> if the
-  key was in the container and was erased. We don't guarantee call of the object destructor after erase call, it can be called later.</div>
+  key was in the container and was erased. <span class="changed-added">We don't guarantee call of the object destructor after erase call, it can be called later.</span></div>
 
 <pre><span class="cppkeyword">template</span>&lt;<span class="cppkeyword">class </span>H2, <span class="cppkeyword">class </span>P2&gt;
 <span class="cppkeyword">void</span> merge(concurrent_unordered_map&lt;Key, T, H2, P2, Allocator&gt;&amp; source);
@@ -700,7 +700,13 @@ size_type update(<span class="cppkeyword">const </span>key_type&amp; key, Args&a
 </span>            t = thread([&amp;users, &amp;b]() {
                 <span class="cppkeyword">while</span> (--b &gt; 0) {
                     <span class="cppkeyword">auto</span> [user_name, data] = <span class="cppkeyword">co_await</span> get_request();
-                    users.visit(user_name, [&amp;data](<span class="cppkeyword">const</span> shared_ptr&lt;user_t&gt; user) { process_user(user, data); });
+                    <span class="changed-added">users.visit(user_name,[&amp;data](<span class="cppkeyword">const</span> shared_ptr&lt;user_t&gt; user) { process_user(user, data); });</span>
+                    <span class="changed-deleted">
+                    shared_ptr&lt;<span class="cppkeyword">const </span>user_t&gt; user = users.find(user_name, shared_ptr&lt;<span class="cppkeyword">const </span>user_t&gt;{});
+                    <span class="cppkeyword">if </span>(!user) <span class="cppkeyword">continue</span>;
+
+                    precess_user(*user, data);
+                    </span>
                 }
             });
         }
@@ -819,19 +825,17 @@ boost::synchronized_value.<br>
 concurrent hash map just as a fixed number of regular hash maps, each
 of them has it's own mutex and represents some kind of hash table
 shard.<br>
-<span class="changed-added">
 4) libcuckoo is the reference implementation of the algorithm presented at
 paper <a href="http://www.cs.cmu.edu/%7Edga/papers/memc3-nsdi2013.pdf">MemC3.pdf</a>.<br>
 5) Facebook opensourced a part of the internal library as folly project at
 github. It has also an implementation of concurrent hash map.
 <br>
-</span>
 The test was very simple:<br>
-* All maps have <span class="changed-added">int</span> keys and int values.<br>
-* <span class="changed-added">We created an appropriate number of threads that tries on each
+* All maps have int keys and int values.<br>
+* We created an appropriate number of threads that tries on each
 iteration to find some random key in the map and probably insert
 another random value by the key to the container
-according. Probability of insert operation is called write fraction below.<br></span>
+according. Probability of insert operation is called write fraction below.<br>
 * Each thread had 1000000 of iterations.<br>
 * We use a computer with 56 virtual cores &amp; 256GB of memory for the
 tests.<br>
@@ -2368,9 +2372,9 @@ this.start)}else return NaN},coordinateToDate:function(a){return this.equalSpaci
 
 As we can see performance scales linearly when the number of threads
 is less than the number of cores. But when we exceed the number of cores, we observe
-significant work time growth.<span class="changed-added">We consider that the algorithm from the reference
+significant work time growth. We consider that the algorithm from the reference
 implementation is rather better than naive implementation and
-  comparable with popular opensource implementations performance.</span>
+  comparable with popular opensource implementations performance.
 
 <script type="text/javascript">
     function colorize_texts(texts) {
